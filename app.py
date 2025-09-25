@@ -18,7 +18,7 @@ login_manager.login_view = "login"
 app.config["SECRET_KEY"] = "aokjijrgiljiwght"
 
 def database():
-    db_link = "<link>"
+    db_link = "postgresql://lyxin:JsVsgW7AGF6SWqoCdwXseMCg9CKhEQzD@dpg-d3am2ii4d50c73deb4kg-a.oregon-postgres.render.com/lyxspace"
     db_link2 = "sqlite:///default.db"
     if db_link:
         try:
@@ -28,9 +28,11 @@ def database():
             return db_link
         except OperationalError as e:
             print("Failed to Connect to Database.", e)
-    return db_link2
+    else:
+        print("Using default SQLite database.")
+        return db_link2
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///default.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = database()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # File upload configuration
