@@ -20,6 +20,9 @@
         font-family: 'Poppins', sans-serif;
         background-color: var(--bg-color);
         color: var(--text-color);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
     }
     
     .gradient-text {
@@ -200,25 +203,6 @@
         box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
     }
     
-    .message {
-        padding: 10px;
-        border-radius: 8px;
-        margin: 10px 0;
-        display: none;
-    }
-    
-    .success {
-        background: rgba(34, 197, 94, 0.2);
-        color: #4ADE80;
-        border: 1px solid rgba(34, 197, 94, 0.3);
-    }
-    
-    .error {
-        background: rgba(239, 68, 68, 0.2);
-        color: #F87171;
-        border: 1px solid rgba(239, 68, 68, 0.3);
-    }
-    
     .access-denied {
         text-align: center;
         padding: 60px 20px;
@@ -265,8 +249,98 @@
         color: #FBBF24;
         border: 1px solid rgba(245, 158, 11, 0.3);
     }
+    
+    /* Toast Notification Styles */
+    .toast-container {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .toast {
+        padding: 15px 20px;
+        border-radius: 10px;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 350px;
+        animation: slideIn 0.3s ease-out;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    
+    .toast-success {
+        background: linear-gradient(90deg, #10B981, #34D399);
+        border-left: 4px solid #059669;
+    }
+    
+    .toast-error {
+        background: linear-gradient(90deg, #EF4444, #F87171);
+        border-left: 4px solid #DC2626;
+    }
+    
+    .toast-info {
+        background: linear-gradient(90deg, #3B82F6, #60A5FA);
+        border-left: 4px solid #2563EB;
+    }
+    
+    .toast-warning {
+        background: linear-gradient(90deg, #F59E0B, #FBBF24);
+        border-left: 4px solid #D97706;
+    }
+    
+    .toast.hiding {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    .refresh-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(59, 130, 246, 0.2);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        margin-top: 10px;
+    }
+    
+    .refresh-indicator i {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    footer {
+        margin-top: auto;
+        padding: 30px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
 </style>
 <body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <!-- Navigation -->
     <nav class="glass-morph sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -307,13 +381,17 @@
         </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-4 py-8">
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow">
         {% if not current_user.is_allowed %}
         <div class="access-denied">
             <i class="fas fa-lock"></i>
             <h2 class="text-2xl font-bold gradient-text mb-4">Access Restricted</h2>
             <p class="text-gray-400 mb-2">Your account is pending approval. Please wait for admin authorization to access files.</p>
             <p class="text-gray-400">Contact administrator if this takes longer than expected.</p>
+            <div class="refresh-indicator">
+                <i class="fas fa-sync-alt"></i>
+                <span>Auto-refresh in <span id="countdown">30</span> seconds</span>
+            </div>
         </div>
         {% endif %}
 
@@ -336,7 +414,6 @@
                         <i class="fas fa-upload mr-2"></i> Upload File
                     </button>
                 </form>
-                <div id="uploadMessage" class="message mt-4"></div>
             </section>
             {% endif %}
 
@@ -351,6 +428,44 @@
             </section>
         </div>
     </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                    <div class="logo-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                            <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                            <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </div>
+                    <span class="text-lg font-bold gradient-text">LyxSpace</span>
+                </div>
+                <div class="text-gray-400 text-sm">
+                    &copy; 2025 LyxSpace. All rights reserved.
+                </div>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-purple-500 transition-colors">
+                        <i class="fab fa-discord"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-red-500 transition-colors">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- File Viewer Modal -->
     <div class="modal" id="viewerModal">
@@ -375,7 +490,6 @@
                 <button id="confirmDownload" class="btn flex-1">Download</button>
                 <button id="cancelDownload" class="btn btn-secondary flex-1">Cancel</button>
             </div>
-            <div id="securityMessage" class="message mt-4"></div>
         </div>
     </div>
 
@@ -383,11 +497,16 @@
         // Global variables
         let currentFileId = null;
         let files = [];
+        let refreshInterval = null;
+        let countdownInterval = null;
 
         // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', function() {
             {% if current_user.is_allowed %}
             loadFiles();
+            {% else %}
+            // Set up auto-refresh if access is denied
+            startAutoRefresh();
             {% endif %}
             
             // Event listeners
@@ -409,14 +528,89 @@
             });
         });
 
+        // Auto-refresh functionality for access denied
+        function startAutoRefresh() {
+            let countdown = 30;
+            const countdownElement = document.getElementById('countdown');
+            
+            // Update countdown every second
+            countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdownElement) countdownElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    location.reload();
+                }
+            }, 1000);
+            
+            // Set up the refresh interval (30 seconds)
+            refreshInterval = setInterval(() => {
+                location.reload();
+            }, 30000);
+        }
+
+        // Stop auto-refresh (if access is granted)
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+
+        // Toast notification system
+        function showToast(message, type = 'info', duration = 5000) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            // Icon based on type
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            else if (type === 'error') icon = 'fa-exclamation-circle';
+            else if (type === 'warning') icon = 'fa-exclamation-triangle';
+            
+            toast.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span>${message}</span>
+                <button class="ml-auto text-white opacity-70 hover:opacity-100" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.parentElement.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+
         // Load files from server
         async function loadFiles() {
             try {
                 const response = await fetch('/api/files');
+                if (!response.ok) throw new Error('Network response was not ok');
+                
                 files = await response.json();
                 renderFiles();
+                
+                // If files loaded successfully and user has access, stop auto-refresh
+                {% if not current_user.is_allowed %}
+                stopAutoRefresh();
+                {% endif %}
             } catch (error) {
                 console.error('Error loading files:', error);
+                showToast('Error loading files. Please try again.', 'error');
                 document.getElementById('filesGrid').innerHTML = '<div class="glass-morph p-8 rounded-2xl text-center"><i class="fas fa-exclamation-triangle text-3xl text-red-400 mb-4"></i><p class="text-gray-400">Error loading files. Please try again.</p></div>';
             }
         }
@@ -467,7 +661,6 @@
             
             const form = e.target;
             const formData = new FormData(form);
-            const messageEl = document.getElementById('uploadMessage');
             
             try {
                 const response = await fetch('/api/upload', {
@@ -478,15 +671,15 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    showMessage(messageEl, 'File uploaded successfully!', 'success');
+                    showToast('File uploaded successfully!', 'success');
                     form.reset();
                     loadFiles(); // Reload the files list
                 } else {
-                    showMessage(messageEl, result.error || 'Upload failed', 'error');
+                    showToast(result.error || 'Upload failed', 'error');
                 }
             } catch (error) {
                 console.error('Upload error:', error);
-                showMessage(messageEl, 'Upload failed. Please try again.', 'error');
+                showToast('Upload failed. Please try again.', 'error');
             }
         }
 
@@ -519,7 +712,6 @@
             currentFileId = fileId;
             document.getElementById('securityModal').style.display = 'flex';
             document.getElementById('securityAnswer').value = '';
-            document.getElementById('securityMessage').style.display = 'none';
         }
 
         // Close security modal
@@ -531,10 +723,9 @@
         // Confirm download after security check
         async function confirmDownload() {
             const answer = document.getElementById('securityAnswer').value;
-            const messageEl = document.getElementById('securityMessage');
             
             if (!answer) {
-                showMessage(messageEl, 'Please provide an answer', 'error');
+                showToast('Please provide an answer', 'warning');
                 return;
             }
             
@@ -568,28 +759,15 @@
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                     
+                    showToast('File download started successfully', 'success');
                     closeSecurityModal();
                 } else {
                     const result = await response.json();
-                    showMessage(messageEl, result.error || 'Download failed', 'error');
+                    showToast(result.error || 'Download failed', 'error');
                 }
             } catch (error) {
                 console.error('Download error:', error);
-                showMessage(messageEl, 'Download failed. Please try again.', 'error');
-            }
-        }
-
-        // Utility function to show messages
-        function showMessage(element, text, type) {
-            element.textContent = text;
-            element.className = `message ${type}`;
-            element.style.display = 'block';
-            
-            // Auto-hide success messages after 3 seconds
-            if (type === 'success') {
-                setTimeout(() => {
-                    element.style.display = 'none';
-                }, 3000);
+                showToast('Download failed. Please try again.', 'error');
             }
         }
     </script>
