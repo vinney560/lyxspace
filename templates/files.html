@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Files | LyxSpace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<style>
+    :root {
+        --bg-color: #111827;
+        --text-color: #F9FAFB;
+        --accent-color: #4A90E2;
+        --secondary-color: #8B5CF6;
+    }
+    
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+    }
+    
+    .gradient-text {
+        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+    }
+    
+    .glass-morph {
+        background: rgba(30, 30, 40, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 8px 32px rgba(0, 31, 135, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .glass-morph:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 31, 135, 0.3);
+    }
+    
+    .btn {
+        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        cursor: pointer;
+    }
+    
+    .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-secondary {
+        background: transparent;
+        border: 1px solid #3B82F6;
+        color: #3B82F6;
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .logo-container {
+        background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+        border-radius: 20px;
+        padding: 10px;
+        display: inline-block;
+    }
+    
+    .file-card {
+        background: rgba(30, 30, 40, 0.6);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .file-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 31, 135, 0.3);
+        border-color: rgba(59, 130, 246, 0.5);
+    }
+    
+    .file-preview {
+        height: 180px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .file-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    
+    .pdf-preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #e74c3c;
+    }
+    
+    .pdf-preview i {
+        font-size: 4rem;
+        margin-bottom: 10px;
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        background: rgba(30, 30, 40, 0.9);
+        backdrop-filter: blur(12px);
+        border-radius: 15px;
+        width: 90%;
+        max-width: 900px;
+        max-height: 90vh;
+        overflow: auto;
+        padding: 20px;
+        position: relative;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .security-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1001;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .security-content {
+        background: rgba(30, 30, 40, 0.9);
+        backdrop-filter: blur(12px);
+        border-radius: 15px;
+        width: 90%;
+        max-width: 400px;
+        padding: 30px;
+        text-align: center;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .form-input {
+        background: rgba(30, 30, 40, 0.7);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 10px;
+        padding: 12px 15px;
+        color: white;
+        width: 100%;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    
+    .message {
+        padding: 10px;
+        border-radius: 8px;
+        margin: 10px 0;
+        display: none;
+    }
+    
+    .success {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ADE80;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    
+    .error {
+        background: rgba(239, 68, 68, 0.2);
+        color: #F87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .access-denied {
+        text-align: center;
+        padding: 60px 20px;
+        background: rgba(30, 30, 40, 0.6);
+        backdrop-filter: blur(12px);
+        border-radius: 15px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .access-denied i {
+        font-size: 4rem;
+        color: #6B7280;
+        margin-bottom: 20px;
+    }
+    
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .status-approved {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ADE80;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    
+    .status-pending {
+        background: rgba(245, 158, 11, 0.2);
+        color: #FBBF24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+</style>
+<body>
+    <!-- Navigation -->
+    <nav class="glass-morph sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="logo-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                        <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                        <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                </div>
+                <span class="text-xl font-bold gradient-text">LyxSpace Files</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">{{ current_user.username or current_user.mobile }}</div>
+                        <div class="status-badge {% if current_user.is_allowed %}status-approved{% else %}status-pending{% endif %}">
+                            {% if current_user.is_allowed %}Approved{% else %}Pending Approval{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if current_user.id == 1 %}
+                    <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary">
+                        <i class="fas fa-cog"></i> Admin
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        {% if not current_user.is_allowed %}
+        <div class="access-denied">
+            <i class="fas fa-lock"></i>
+            <h2 class="text-2xl font-bold gradient-text mb-4">Access Restricted</h2>
+            <p class="text-gray-400 mb-2">Your account is pending approval. Please wait for admin authorization to access files.</p>
+            <p class="text-gray-400">Contact administrator if this takes longer than expected.</p>
+        </div>
+        {% endif %}
+
+        <div class="{% if not current_user.is_allowed %}opacity-50 pointer-events-none{% endif %}">
+            {% if current_user.id == 1 %}
+            <section class="glass-morph p-6 rounded-2xl mb-8">
+                <h2 class="text-2xl font-bold gradient-text mb-4">Upload New File</h2>
+                <form class="upload-form" id="uploadForm" enctype="multipart/form-data">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="file" class="block text-gray-300 mb-2">Select File (PDF or Image)</label>
+                            <input type="file" id="file" name="file" class="form-input" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" required>
+                        </div>
+                        <div>
+                            <label for="description" class="block text-gray-300 mb-2">Description (Optional)</label>
+                            <textarea id="description" name="description" class="form-input" rows="2" placeholder="Add a brief description..."></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn mt-4">
+                        <i class="fas fa-upload mr-2"></i> Upload File
+                    </button>
+                </form>
+                <div id="uploadMessage" class="message mt-4"></div>
+            </section>
+            {% endif %}
+
+            <section>
+                <h2 class="text-2xl font-bold gradient-text mb-6">Available Files</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="filesGrid">
+                    <div class="glass-morph p-8 rounded-2xl text-center">
+                        <i class="fas fa-spinner fa-spin text-3xl text-blue-400 mb-4"></i>
+                        <p class="text-gray-400">Loading files...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- File Viewer Modal -->
+    <div class="modal" id="viewerModal">
+        <div class="modal-content">
+            <button class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl" id="closeViewer">&times;</button>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Check Modal -->
+    <div class="security-modal" id="securityModal">
+        <div class="security-content">
+            <h3 class="text-xl font-bold gradient-text mb-2">Security Check Required</h3>
+            <p class="text-gray-300 mb-4">Please answer the following question to download this file:</p>
+            <p class="text-blue-400 font-medium mb-4">What is the current year's student code? (Hint: student2023)</p>
+            <div class="mb-4">
+                <input type="text" id="securityAnswer" class="form-input" placeholder="Your answer">
+            </div>
+            <div class="flex space-x-4">
+                <button id="confirmDownload" class="btn flex-1">Download</button>
+                <button id="cancelDownload" class="btn btn-secondary flex-1">Cancel</button>
+            </div>
+            <div id="securityMessage" class="message mt-4"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentFileId = null;
+        let files = [];
+
+        // DOM Content Loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if current_user.is_allowed %}
+            loadFiles();
+            {% endif %}
+            
+            // Event listeners
+            {% if current_user.id == 1 %}
+            document.getElementById('uploadForm').addEventListener('submit', handleUpload);
+            {% endif %}
+            
+            document.getElementById('closeViewer').addEventListener('click', closeViewer);
+            document.getElementById('confirmDownload').addEventListener('click', confirmDownload);
+            document.getElementById('cancelDownload').addEventListener('click', closeSecurityModal);
+            
+            // Close modals when clicking outside
+            document.getElementById('viewerModal').addEventListener('click', function(e) {
+                if (e.target === this) closeViewer();
+            });
+            
+            document.getElementById('securityModal').addEventListener('click', function(e) {
+                if (e.target === this) closeSecurityModal();
+            });
+        });
+
+        // Load files from server
+        async function loadFiles() {
+            try {
+                const response = await fetch('/api/files');
+                files = await response.json();
+                renderFiles();
+            } catch (error) {
+                console.error('Error loading files:', error);
+                document.getElementById('filesGrid').innerHTML = '<div class="glass-morph p-8 rounded-2xl text-center"><i class="fas fa-exclamation-triangle text-3xl text-red-400 mb-4"></i><p class="text-gray-400">Error loading files. Please try again.</p></div>';
+            }
+        }
+
+        // Render files in grid
+        function renderFiles() {
+            const filesGrid = document.getElementById('filesGrid');
+            
+            if (files.length === 0) {
+                filesGrid.innerHTML = '<div class="glass-morph p-8 rounded-2xl text-center col-span-3"><i class="fas fa-folder-open text-3xl text-blue-400 mb-4"></i><p class="text-gray-400">No files available.{% if current_user.id == 1 %} Upload some files to get started.{% endif %}</p></div>';
+                return;
+            }
+            
+            filesGrid.innerHTML = files.map(file => `
+                <div class="file-card">
+                    <div class="file-preview">
+                        ${file.file_type === 'pdf' ? 
+                            `<div class="pdf-preview">
+                                <i class="fas fa-file-pdf"></i>
+                                <span>PDF Document</span>
+                            </div>` : 
+                            `<img src="/api/file/${file.id}" alt="${file.filename}">`
+                        }
+                    </div>
+                    <div class="p-4">
+                        <div class="file-name font-bold mb-2 truncate">${file.filename}</div>
+                        <div class="file-description text-gray-400 text-sm mb-3 line-clamp-2">${file.description || 'No description provided'}</div>
+                        <div class="flex justify-between text-xs text-gray-500 mb-3">
+                            <span>${new Date(file.upload_date).toLocaleDateString()}</span>
+                            <span class="uppercase">${file.file_type}</span>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="btn btn-secondary flex-1 text-sm" onclick="viewFile(${file.id}, '${file.file_type}')">
+                                <i class="fas fa-eye mr-1"></i> View
+                            </button>
+                            <button class="btn flex-1 text-sm" onclick="requestDownload(${file.id})">
+                                <i class="fas fa-download mr-1"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Handle file upload (admin only)
+        async function handleUpload(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const messageEl = document.getElementById('uploadMessage');
+            
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage(messageEl, 'File uploaded successfully!', 'success');
+                    form.reset();
+                    loadFiles(); // Reload the files list
+                } else {
+                    showMessage(messageEl, result.error || 'Upload failed', 'error');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showMessage(messageEl, 'Upload failed. Please try again.', 'error');
+            }
+        }
+
+        // View file in modal
+        function viewFile(fileId, fileType) {
+            currentFileId = fileId;
+            const modalBody = document.getElementById('modalBody');
+            
+            if (fileType === 'pdf') {
+                modalBody.innerHTML = `
+                    <embed id="pdf-viewer" src="/api/file/${fileId}" type="application/pdf" class="w-full h-96">
+                `;
+            } else {
+                modalBody.innerHTML = `
+                    <img id="image-viewer" src="/api/file/${fileId}" alt="File preview" class="max-w-full max-h-96 mx-auto">
+                `;
+            }
+            
+            document.getElementById('viewerModal').style.display = 'flex';
+        }
+
+        // Close viewer modal
+        function closeViewer() {
+            document.getElementById('viewerModal').style.display = 'none';
+            currentFileId = null;
+        }
+
+        // Request download (show security modal)
+        function requestDownload(fileId) {
+            currentFileId = fileId;
+            document.getElementById('securityModal').style.display = 'flex';
+            document.getElementById('securityAnswer').value = '';
+            document.getElementById('securityMessage').style.display = 'none';
+        }
+
+        // Close security modal
+        function closeSecurityModal() {
+            document.getElementById('securityModal').style.display = 'none';
+            currentFileId = null;
+        }
+
+        // Confirm download after security check
+        async function confirmDownload() {
+            const answer = document.getElementById('securityAnswer').value;
+            const messageEl = document.getElementById('securityMessage');
+            
+            if (!answer) {
+                showMessage(messageEl, 'Please provide an answer', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/download/${currentFileId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ security_answer: answer })
+                });
+                
+                if (response.ok) {
+                    // If the response is OK, create a download link
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    
+                    // Get filename from content-disposition header or use a default
+                    const contentDisposition = response.headers.get('content-disposition');
+                    let filename = 'download';
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                        if (filenameMatch) filename = filenameMatch[1];
+                    }
+                    
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    closeSecurityModal();
+                } else {
+                    const result = await response.json();
+                    showMessage(messageEl, result.error || 'Download failed', 'error');
+                }
+            } catch (error) {
+                console.error('Download error:', error);
+                showMessage(messageEl, 'Download failed. Please try again.', 'error');
+            }
+        }
+
+        // Utility function to show messages
+        function showMessage(element, text, type) {
+            element.textContent = text;
+            element.className = `message ${type}`;
+            element.style.display = 'block';
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
