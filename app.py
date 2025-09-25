@@ -6,7 +6,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 from flask_compress import Compress
-from flask_session import Session
 from datetime import datetime, timedelta
 from functools import wraps
 from werkzeug.utils import secure_filename
@@ -58,7 +57,7 @@ def nairobi_time():
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    mobile = db.Column(db.integer(25), unique=True, nullable=True)
+    mobile = db.Column(db.Integer(25), unique=True, nullable=True)
     username = db.Column(db.String(255), nullable=True)
     login_at = db.Column(db.DateTime, default=nairobi_time)
     allowed = db.Column(db.String(255), default="no", nullable=True)
