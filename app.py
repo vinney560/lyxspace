@@ -79,8 +79,7 @@ class File(db.Model):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Simple admin check - in production, use proper admin authentication
-        if not current_user.is_authenticated or current_user.id != 1:  # Assuming user ID 1 is admin
+        if not current_user.is_authenticated or current_user.id != 1:
             flash("Admin access required.", "error")
             return redirect(url_for('login'))
         return f(*args, **kwargs)
@@ -167,7 +166,7 @@ def logout():
     user_id = current_user.id
     logout_user()
     
-    # Only delete if not admin (ID 1)
+    # Only delete if not admin
     if user_id != 1:
         user = User.query.get(user_id)
         if user:
@@ -315,6 +314,7 @@ def delete_file(file_id):
 #--------------------------------------------------------------------
 # Initialize database
 with app.app_context():
+    db.drop_all()
     db.create_all()
     # Create admin user if not exists
     admin = User.query.get(1)
