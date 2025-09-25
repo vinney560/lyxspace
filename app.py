@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from werkzeug.utils import secure_filename
 import secrets
+import psycopg2
 
 app = Flask(__name__)
 login_manager = LoginManager(app)
