@@ -57,7 +57,7 @@ def nairobi_time():
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    mobile = db.Column(db.Integer(25), unique=True, nullable=True)
+    mobile = db.Column(db.Integer, unique=True, nullable=True)
     username = db.Column(db.String(255), nullable=True)
     login_at = db.Column(db.DateTime, default=nairobi_time)
     allowed = db.Column(db.String(255), default="no", nullable=True)
@@ -314,7 +314,6 @@ def delete_file(file_id):
 #--------------------------------------------------------------------
 # Initialize database
 with app.app_context():
-    db.drop_all()
     db.create_all()
     # Create admin user if not exists
     admin = User.query.get(1)
