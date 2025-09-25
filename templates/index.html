@@ -143,7 +143,7 @@
                 <a href="#" class="hover:text-blue-400 transition-colors">About</a>
                 <a href="#" class="hover:text-blue-400 transition-colors">Contact</a>
             </div>
-            <button class="btn pulse">Get Started</button>
+            <button class="btn pulse" onclick="window.location.href='/login'">Get Started</button>
         </div>
     </nav>
 
@@ -305,7 +305,7 @@
                     <div class="flex items-center mb-4">
                         <div class="w-12 h-12 rounded-full bg-blue-500 mr-4"></div>
                         <div>
-                            <h4 class="font-bold">Alex Johnson</h4>
+                            <h4 class="font-bold">Alex Mwangi</h4>
                             <p class="text-blue-400">Web Developer</p>
                         </div>
                     </div>
@@ -315,7 +315,7 @@
                     <div class="flex items-center mb-4">
                         <div class="w-12 h-12 rounded-full bg-purple-500 mr-4"></div>
                         <div>
-                            <h4 class="font-bold">Sarah Miller</h4>
+                            <h4 class="font-bold">Marion Shabaya</h4>
                             <p class="text-purple-400">Full Stack Developer</p>
                         </div>
                     </div>
@@ -328,7 +328,7 @@
         <section class="text-center py-12">
             <h2 class="text-3xl md:text-4xl font-bold gradient-text mb-6 tracking-tight">Start Your Coding Journey Today</h2>
             <p class="text-xl mb-8 max-w-2xl mx-auto">Join thousands of students who have transformed their careers with LyxSpace. No prior experience required.</p>
-            <button class="btn pulse text-lg px-8 py-4">Enroll Now - Limited Time Offer</button>
+            <button class="btn pulse text-lg px-8 py-4" onclick="window.location.href='{{ url_for('login') }}'">Enroll Now - Limited Time Offer</button>
         </section>
     </main>
 
