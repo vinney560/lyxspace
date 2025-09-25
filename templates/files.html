@@ -16,6 +16,10 @@
         --secondary-color: #8B5CF6;
     }
     
+    * {
+        box-sizing: border-box;
+    }
+    
     body {
         font-family: 'Poppins', sans-serif;
         background-color: var(--bg-color);
@@ -23,6 +27,8 @@
         min-height: 100vh;
         display: flex;
         flex-direction: column;
+        margin: 0;
+        padding: 0;
     }
     
     .gradient-text {
@@ -57,6 +63,11 @@
         transition: all 0.3s ease;
         box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        white-space: nowrap;
     }
     
     .btn:hover {
@@ -74,6 +85,11 @@
         background: rgba(59, 130, 246, 0.1);
     }
     
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.875rem;
+    }
+    
     .pulse {
         animation: pulse 2s infinite;
     }
@@ -88,7 +104,9 @@
         background: linear-gradient(135deg, #3B82F6, #8B5CF6);
         border-radius: 20px;
         padding: 10px;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .file-card {
@@ -97,6 +115,9 @@
         overflow: hidden;
         transition: all 0.3s ease;
         border: 1px solid rgba(59, 130, 246, 0.2);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
     }
     
     .file-card:hover {
@@ -112,6 +133,7 @@
         align-items: center;
         justify-content: center;
         background: rgba(0, 0, 0, 0.2);
+        flex-shrink: 0;
     }
     
     .file-preview img {
@@ -146,13 +168,14 @@
         z-index: 1000;
         align-items: center;
         justify-content: center;
+        padding: 20px;
     }
     
     .modal-content {
         background: rgba(30, 30, 40, 0.9);
         backdrop-filter: blur(12px);
         border-radius: 15px;
-        width: 90%;
+        width: 100%;
         max-width: 900px;
         max-height: 90vh;
         overflow: auto;
@@ -173,13 +196,14 @@
         z-index: 1001;
         align-items: center;
         justify-content: center;
+        padding: 20px;
     }
     
     .security-content {
         background: rgba(30, 30, 40, 0.9);
         backdrop-filter: blur(12px);
         border-radius: 15px;
-        width: 90%;
+        width: 100%;
         max-width: 400px;
         padding: 30px;
         text-align: center;
@@ -195,6 +219,7 @@
         width: 100%;
         margin-bottom: 20px;
         transition: all 0.3s ease;
+        font-size: 16px; /* Prevents zoom on iOS */
     }
     
     .form-input:focus {
@@ -205,7 +230,7 @@
     
     .access-denied {
         text-align: center;
-        padding: 60px 20px;
+        padding: 40px 20px;
         background: rgba(30, 30, 40, 0.6);
         backdrop-filter: blur(12px);
         border-radius: 15px;
@@ -214,28 +239,30 @@
     }
     
     .access-denied i {
-        font-size: 4rem;
+        font-size: 3rem;
         color: #6B7280;
         margin-bottom: 20px;
     }
     
     .user-avatar {
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
         background: linear-gradient(135deg, #3B82F6, #8B5CF6);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 1.5rem;
+        font-size: 1.2rem;
+        flex-shrink: 0;
     }
     
     .status-badge {
         padding: 4px 12px;
         border-radius: 20px;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         font-weight: 600;
+        white-space: nowrap;
     }
     
     .status-approved {
@@ -253,12 +280,14 @@
     /* Toast Notification Styles */
     .toast-container {
         position: fixed;
-        top: 100px;
-        right: 20px;
+        top: 90px;
+        right: 10px;
+        left: 10px;
         z-index: 9999;
         display: flex;
         flex-direction: column;
         gap: 10px;
+        pointer-events: none;
     }
     
     .toast {
@@ -270,9 +299,10 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        max-width: 350px;
+        max-width: 100%;
         animation: slideIn 0.3s ease-out;
         transition: transform 0.3s ease, opacity 0.3s ease;
+        pointer-events: auto;
     }
     
     .toast-success {
@@ -336,104 +366,84 @@
         padding: 30px 0;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
+    
+    /* Responsive adjustments */
+    @media (min-width: 640px) {
+        .toast-container {
+            right: 20px;
+            left: auto;
+            max-width: 400px;
+        }
+        
+        .access-denied {
+            padding: 60px 20px;
+        }
+        
+        .access-denied i {
+            font-size: 4rem;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+        }
+        
+        .status-badge {
+            font-size: 0.8rem;
+        }
+    }
+    
+    @media (min-width: 768px) {
+        .modal-content, .security-content {
+            padding: 30px;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .btn {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+        
+        .pdf-preview i {
+            font-size: 3rem;
+        }
+    }
+    
+    /* Prevent horizontal scrolling */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+    
+    /* Improved touch targets for mobile */
+    @media (max-width: 768px) {
+        .btn, .form-input, .file-card {
+            min-height: 44px; /* Minimum touch target size */
+        }
+        
+        .file-actions .btn {
+            min-height: 36px;
+        }
+    }
+    
+    /* Better text rendering on mobile */
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+    }
 </style>
 <body>
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Navigation -->
-    <nav class="glass-morph sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="logo-container">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                        <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
-                        <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
-                        <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                    </svg>
-                </div>
-                <span class="text-xl font-bold gradient-text">LyxSpace Files</span>
-            </div>
-            <div class="flex items-center space-x-4">
+    <nav class="glass-morph sticky top-0 z-50" style="position: sticky; top: 0;">
+        <div class="max-w-6xl mx-auto px-4 py-3 sm:py-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
                 <div class="flex items-center space-x-3">
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div>
-                        <div class="font-medium">{{ current_user.username or current_user.mobile }}</div>
-                        <div class="status-badge {% if current_user.is_allowed %}status-approved{% else %}status-pending{% endif %}">
-                            {% if current_user.is_allowed %}Approved{% else %}Pending Approval{% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% if current_user.id == 1 %}
-                    <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary">
-                        <i class="fas fa-cog"></i> Admin
-                    </a>
-                {% endif %}
-                <a href="{{ url_for('logout') }}" class="btn btn-secondary">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow">
-        {% if not current_user.is_allowed %}
-        <div class="access-denied">
-            <i class="fas fa-lock"></i>
-            <h2 class="text-2xl font-bold gradient-text mb-4">Access Restricted</h2>
-            <p class="text-gray-400 mb-2">Your account is pending approval. Please wait for admin authorization to access files.</p>
-            <p class="text-gray-400">Contact administrator if this takes longer than expected.</p>
-            <div class="refresh-indicator">
-                <i class="fas fa-sync-alt"></i>
-                <span>Auto-refresh in <span id="countdown">30</span> seconds</span>
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="{% if not current_user.is_allowed %}opacity-50 pointer-events-none{% endif %}">
-            {% if current_user.id == 1 %}
-            <section class="glass-morph p-6 rounded-2xl mb-8">
-                <h2 class="text-2xl font-bold gradient-text mb-4">Upload New File</h2>
-                <form class="upload-form" id="uploadForm" enctype="multipart/form-data">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="file" class="block text-gray-300 mb-2">Select File (PDF or Image)</label>
-                            <input type="file" id="file" name="file" class="form-input" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" required>
-                        </div>
-                        <div>
-                            <label for="description" class="block text-gray-300 mb-2">Description (Optional)</label>
-                            <textarea id="description" name="description" class="form-input" rows="2" placeholder="Add a brief description..."></textarea>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn mt-4">
-                        <i class="fas fa-upload mr-2"></i> Upload File
-                    </button>
-                </form>
-            </section>
-            {% endif %}
-
-            <section>
-                <h2 class="text-2xl font-bold gradient-text mb-6">Available Files</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="filesGrid">
-                    <div class="glass-morph p-8 rounded-2xl text-center">
-                        <i class="fas fa-spinner fa-spin text-3xl text-blue-400 mb-4"></i>
-                        <p class="text-gray-400">Loading files...</p>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer>
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="flex items-center space-x-3 mb-4 md:mb-0">
                     <div class="logo-container">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
@@ -444,22 +454,119 @@
                             <line x1="12" y1="22.08" x2="12" y2="12"></line>
                         </svg>
                     </div>
+                    <span class="text-xl font-bold gradient-text">LyxSpace Files</span>
+                </div>
+                <div class="flex flex-col xs:flex-row items-center space-y-2 xs:space-y-0 xs:space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="text-center xs:text-left">
+                            <div class="font-medium text-sm sm:text-base">{{ current_user.username or current_user.mobile }}</div>
+                            <div class="status-badge {% if current_user.is_allowed %}status-approved{% else %}status-pending{% endif %}">
+                                {% if current_user.is_allowed %}Approved{% else %}Pending Approval{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        {% if current_user.id == 1 %}
+                            <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-cog"></i> <span class="hidden xs:inline">Admin</span>
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-sign-out-alt"></i> <span class="hidden xs:inline">Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-6 sm:py-8 flex-grow w-full">
+        {% if not current_user.is_allowed %}
+        <div class="access-denied">
+            <i class="fas fa-lock"></i>
+            <h2 class="text-xl sm:text-2xl font-bold gradient-text mb-4">Access Restricted</h2>
+            <p class="text-gray-400 mb-2 text-sm sm:text-base">Your account is pending approval. Please wait for admin authorization to access files.</p>
+            <p class="text-gray-400 text-sm sm:text-base">Contact administrator if this takes longer than expected.</p>
+            <div class="refresh-indicator">
+                <i class="fas fa-sync-alt"></i>
+                <span>Auto-refresh in <span id="countdown">30</span> seconds</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="{% if not current_user.is_allowed %}opacity-50 pointer-events-none{% endif %}">
+            {% if current_user.id == 1 %}
+            <section class="glass-morph p-4 sm:p-6 rounded-2xl mb-6 sm:mb-8">
+                <h2 class="text-xl sm:text-2xl font-bold gradient-text mb-4">Upload New File</h2>
+                <form class="upload-form" id="uploadForm" enctype="multipart/form-data">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="file" class="block text-gray-300 mb-2 text-sm sm:text-base">Select File (PDF or Image)</label>
+                            <input type="file" id="file" name="file" class="form-input" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" required>
+                        </div>
+                        <div>
+                            <label for="description" class="block text-gray-300 mb-2 text-sm sm:text-base">Description (Optional)</label>
+                            <textarea id="description" name="description" class="form-input" rows="2" placeholder="Add a brief description..."></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn mt-4 w-full sm:w-auto">
+                        <i class="fas fa-upload mr-2"></i> Upload File
+                    </button>
+                </form>
+            </section>
+            {% else %}
+            <!-- Toast notification for non-admins -->
+            <div id="nonAdminToast" class="hidden">
+                <!-- This will be triggered by JavaScript for non-admin users -->
+            </div>
+            {% endif %}
+
+            <section>
+                <h2 class="text-xl sm:text-2xl font-bold gradient-text mb-4 sm:mb-6">Available Files</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="filesGrid">
+                    <div class="glass-morph p-6 sm:p-8 rounded-2xl text-center col-span-full">
+                        <i class="fas fa-spinner fa-spin text-2xl sm:text-3xl text-blue-400 mb-3 sm:mb-4"></i>
+                        <p class="text-gray-400 text-sm sm:text-base">Loading files...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center py-4">
+                <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                    <div class="logo-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                            <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                            <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </div>
                     <span class="text-lg font-bold gradient-text">LyxSpace</span>
                 </div>
-                <div class="text-gray-400 text-sm">
+                <div class="text-gray-400 text-sm text-center md:text-left mb-4 md:mb-0">
                     &copy; 2025 LyxSpace. All rights reserved.
                 </div>
-                <div class="flex space-x-4 mt-4 md:mt-0">
-                    <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors" aria-label="Twitter">
                         <i class="fab fa-twitter"></i>
                     </a>
-                    <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors">
+                    <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors" aria-label="LinkedIn">
                         <i class="fab fa-linkedin"></i>
                     </a>
-                    <a href="#" class="text-gray-400 hover:text-purple-500 transition-colors">
+                    <a href="#" class="text-gray-400 hover:text-purple-500 transition-colors" aria-label="Discord">
                         <i class="fab fa-discord"></i>
                     </a>
-                    <a href="#" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <a href="#" class="text-gray-400 hover:text-red-500 transition-colors" aria-label="YouTube">
                         <i class="fab fa-youtube"></i>
                     </a>
                 </div>
@@ -470,8 +577,8 @@
     <!-- File Viewer Modal -->
     <div class="modal" id="viewerModal">
         <div class="modal-content">
-            <button class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl" id="closeViewer">&times;</button>
-            <div class="modal-body" id="modalBody">
+            <button class="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-white text-2xl focus:outline-none" id="closeViewer" aria-label="Close modal">&times;</button>
+            <div class="modal-body pt-4" id="modalBody">
                 <!-- Content will be loaded here -->
             </div>
         </div>
@@ -480,15 +587,15 @@
     <!-- Security Check Modal -->
     <div class="security-modal" id="securityModal">
         <div class="security-content">
-            <h3 class="text-xl font-bold gradient-text mb-2">Security Check Required</h3>
-            <p class="text-gray-300 mb-4">Please answer the following question to download this file:</p>
-            <p class="text-blue-400 font-medium mb-4">What is the current year's student code? (Hint: student2023)</p>
+            <h3 class="text-lg sm:text-xl font-bold gradient-text mb-2">Security Check Required</h3>
+            <p class="text-gray-300 mb-4 text-sm sm:text-base">Please answer the following question to download this file:</p>
+            <p class="text-blue-400 font-medium mb-4 text-sm sm:text-base">What is the current year's student code? (Hint: student2023)</p>
             <div class="mb-4">
-                <input type="text" id="securityAnswer" class="form-input" placeholder="Your answer">
+                <input type="text" id="securityAnswer" class="form-input" placeholder="Your answer" aria-label="Security answer">
             </div>
-            <div class="flex space-x-4">
-                <button id="confirmDownload" class="btn flex-1">Download</button>
-                <button id="cancelDownload" class="btn btn-secondary flex-1">Cancel</button>
+            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                <button id="confirmDownload" class="btn flex-1 order-2 sm:order-1">Download</button>
+                <button id="cancelDownload" class="btn btn-secondary flex-1 order-1 sm:order-2">Cancel</button>
             </div>
         </div>
     </div>
@@ -499,6 +606,7 @@
         let files = [];
         let refreshInterval = null;
         let countdownInterval = null;
+        const isAdmin = {{ 'true' if current_user.id == 1 else 'false' }};
 
         // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', function() {
@@ -508,6 +616,11 @@
             // Set up auto-refresh if access is denied
             startAutoRefresh();
             {% endif %}
+            
+            // Show welcome toast for non-admin users
+            if (!isAdmin && {{ 'true' if current_user.is_allowed else 'false' }}) {
+                showToast('Welcome! You can view and download files.', 'info', 4000);
+            }
             
             // Event listeners
             {% if current_user.id == 1 %}
@@ -526,6 +639,14 @@
             document.getElementById('securityModal').addEventListener('click', function(e) {
                 if (e.target === this) closeSecurityModal();
             });
+            
+            // Close modals with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeViewer();
+                    closeSecurityModal();
+                }
+            });
         });
 
         // Auto-refresh functionality for access denied
@@ -540,7 +661,10 @@
                 
                 if (countdown <= 0) {
                     clearInterval(countdownInterval);
-                    location.reload();
+                    showToast('Refreshing page to check access status...', 'info', 2000);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
                 }
             }, 1000);
             
@@ -576,8 +700,8 @@
             
             toast.innerHTML = `
                 <i class="fas ${icon}"></i>
-                <span>${message}</span>
-                <button class="ml-auto text-white opacity-70 hover:opacity-100" onclick="this.parentElement.remove()">
+                <span class="flex-1 text-sm sm:text-base">${message}</span>
+                <button class="ml-2 text-white opacity-70 hover:opacity-100 focus:outline-none" onclick="this.parentElement.remove()" aria-label="Dismiss notification">
                     <i class="fas fa-times"></i>
                 </button>
             `;
@@ -608,10 +732,15 @@
                 {% if not current_user.is_allowed %}
                 stopAutoRefresh();
                 {% endif %}
+                
+                // Show toast with file count for non-admins
+                if (!isAdmin && files.length > 0) {
+                    showToast(`Loaded ${files.length} file${files.length !== 1 ? 's' : ''} successfully`, 'success', 3000);
+                }
             } catch (error) {
                 console.error('Error loading files:', error);
                 showToast('Error loading files. Please try again.', 'error');
-                document.getElementById('filesGrid').innerHTML = '<div class="glass-morph p-8 rounded-2xl text-center"><i class="fas fa-exclamation-triangle text-3xl text-red-400 mb-4"></i><p class="text-gray-400">Error loading files. Please try again.</p></div>';
+                document.getElementById('filesGrid').innerHTML = '<div class="glass-morph p-6 sm:p-8 rounded-2xl text-center col-span-full"><i class="fas fa-exclamation-triangle text-2xl sm:text-3xl text-red-400 mb-3 sm:mb-4"></i><p class="text-gray-400 text-sm sm:text-base">Error loading files. Please try again.</p></div>';
             }
         }
 
@@ -620,7 +749,7 @@
             const filesGrid = document.getElementById('filesGrid');
             
             if (files.length === 0) {
-                filesGrid.innerHTML = '<div class="glass-morph p-8 rounded-2xl text-center col-span-3"><i class="fas fa-folder-open text-3xl text-blue-400 mb-4"></i><p class="text-gray-400">No files available.{% if current_user.id == 1 %} Upload some files to get started.{% endif %}</p></div>';
+                filesGrid.innerHTML = '<div class="glass-morph p-6 sm:p-8 rounded-2xl text-center col-span-full"><i class="fas fa-folder-open text-2xl sm:text-3xl text-blue-400 mb-3 sm:mb-4"></i><p class="text-gray-400 text-sm sm:text-base">No files available.{% if current_user.id == 1 %} Upload some files to get started.{% endif %}</p></div>';
                 return;
             }
             
@@ -630,23 +759,23 @@
                         ${file.file_type === 'pdf' ? 
                             `<div class="pdf-preview">
                                 <i class="fas fa-file-pdf"></i>
-                                <span>PDF Document</span>
+                                <span class="text-sm sm:text-base">PDF Document</span>
                             </div>` : 
-                            `<img src="/api/file/${file.id}" alt="${file.filename}">`
+                            `<img src="/api/file/${file.id}" alt="${file.filename}" loading="lazy">`
                         }
                     </div>
-                    <div class="p-4">
-                        <div class="file-name font-bold mb-2 truncate">${file.filename}</div>
-                        <div class="file-description text-gray-400 text-sm mb-3 line-clamp-2">${file.description || 'No description provided'}</div>
+                    <div class="p-4 flex flex-col flex-grow">
+                        <div class="file-name font-bold mb-2 truncate text-sm sm:text-base">${file.filename}</div>
+                        <div class="file-description text-gray-400 text-xs sm:text-sm mb-3 line-clamp-2 flex-grow">${file.description || 'No description provided'}</div>
                         <div class="flex justify-between text-xs text-gray-500 mb-3">
                             <span>${new Date(file.upload_date).toLocaleDateString()}</span>
                             <span class="uppercase">${file.file_type}</span>
                         </div>
-                        <div class="flex space-x-2">
-                            <button class="btn btn-secondary flex-1 text-sm" onclick="viewFile(${file.id}, '${file.file_type}')">
+                        <div class="flex space-x-2 mt-auto">
+                            <button class="btn btn-secondary flex-1 text-xs sm:text-sm" onclick="viewFile(${file.id}, '${file.file_type}')">
                                 <i class="fas fa-eye mr-1"></i> View
                             </button>
-                            <button class="btn flex-1 text-sm" onclick="requestDownload(${file.id})">
+                            <button class="btn flex-1 text-xs sm:text-sm" onclick="requestDownload(${file.id})">
                                 <i class="fas fa-download mr-1"></i> Download
                             </button>
                         </div>
@@ -661,6 +790,12 @@
             
             const form = e.target;
             const formData = new FormData(form);
+            
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Uploading...';
+            submitBtn.disabled = true;
             
             try {
                 const response = await fetch('/api/upload', {
@@ -680,6 +815,10 @@
             } catch (error) {
                 console.error('Upload error:', error);
                 showToast('Upload failed. Please try again.', 'error');
+            } finally {
+                // Reset button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             }
         }
 
@@ -687,6 +826,8 @@
         function viewFile(fileId, fileType) {
             currentFileId = fileId;
             const modalBody = document.getElementById('modalBody');
+            
+            showToast('Loading file preview...', 'info', 2000);
             
             if (fileType === 'pdf') {
                 modalBody.innerHTML = `
@@ -699,11 +840,13 @@
             }
             
             document.getElementById('viewerModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
         }
 
         // Close viewer modal
         function closeViewer() {
             document.getElementById('viewerModal').style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
             currentFileId = null;
         }
 
@@ -712,11 +855,18 @@
             currentFileId = fileId;
             document.getElementById('securityModal').style.display = 'flex';
             document.getElementById('securityAnswer').value = '';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            
+            // Focus on the input for better accessibility
+            setTimeout(() => {
+                document.getElementById('securityAnswer').focus();
+            }, 100);
         }
 
         // Close security modal
         function closeSecurityModal() {
             document.getElementById('securityModal').style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
             currentFileId = null;
         }
 
@@ -728,6 +878,12 @@
                 showToast('Please provide an answer', 'warning');
                 return;
             }
+            
+            // Show loading state
+            const confirmBtn = document.getElementById('confirmDownload');
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Downloading...';
+            confirmBtn.disabled = true;
             
             try {
                 const response = await fetch(`/api/download/${currentFileId}`, {
@@ -768,6 +924,10 @@
             } catch (error) {
                 console.error('Download error:', error);
                 showToast('Download failed. Please try again.', 'error');
+            } finally {
+                // Reset button state
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.disabled = false;
             }
         }
     </script>

@@ -57,7 +57,7 @@ def nairobi_time():
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    mobile = db.Column(db.String(100), unique=True, nullable=True)
+    mobile = db.Column(db.integer(25), unique=True, nullable=True)
     username = db.Column(db.String(255), nullable=True)
     login_at = db.Column(db.DateTime, default=nairobi_time)
     allowed = db.Column(db.String(255), default="no", nullable=True)
@@ -105,7 +105,7 @@ def allowed_file(filename):
 #--------------------------------------------------------------------
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(app.config['STATIC_FOLDER'], 'favicon.ico')
+    return send_from_directory(app.config['UPLOAD_FOLDER'], 'favicon.ico')
 
 # Serve uploaded files
 @app.route('/uploads/<filename>')
@@ -319,7 +319,7 @@ with app.app_context():
     # Create admin user if not exists
     admin = User.query.get(1)
     if not admin:
-        admin = User(id=1, mobile="admin", username="Administrator", allowed="yes")
+        admin = User(id=1, mobile="0740694312", username="Administrator", allowed="yes")
         db.session.add(admin)
         db.session.commit()
 
