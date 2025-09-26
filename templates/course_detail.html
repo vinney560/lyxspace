@@ -801,9 +801,10 @@
                                 {% if module.lessons > 3 %}
                                 <div class="lesson-item bg-gradient-to-r from-blue-500/20 to-purple-500/20">
                                     <div class="flex items-center">
-                                        <i class="fas fa-tasks text-green-400 mr-3"></i>
-                                        <span>Practice Exercise</span>
-                                    </div>
+                                <div class="stat-item">
+                                    <div class="stat-value text-yellow-400">{{ course.modules|length }}</div>
+                                    <div class="stat-label">Learning Modules</div>
+                                </div>
                                     <span class="lesson-duration">30 min</span>
                                 </div>
                                 {% endif %}
