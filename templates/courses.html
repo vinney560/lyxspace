@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses | LyxSpace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<style>
+    :root {
+        --bg-color: #111827;
+        --text-color: #F9FAFB;
+        --accent-color: #4A90E2;
+        --secondary-color: #8B5CF6;
+    }
+    
+    * {
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: var(--text-color);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .gradient-text {
+        background: linear-gradient(90deg, #3B82F6, #8B5CF6, #EC4899);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        background-size: 200% auto;
+        animation: gradientShift 3s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+        0% { background-position: 0% center; }
+        50% { background-position: 100% center; }
+        100% { background-position: 0% center; }
+    }
+    
+    .glass-morph {
+        background: rgba(30, 30, 40, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 8px 32px rgba(0, 31, 135, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .glass-morph:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn {
+        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        white-space: nowrap;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.5);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%);
+        transform-origin: 50% 50%;
+    }
+    
+    .btn:focus:not(:active)::after {
+        animation: ripple 1s ease-out;
+    }
+    
+    @keyframes ripple {
+        0% {
+            transform: scale(0, 0);
+            opacity: 0.5;
+        }
+        100% {
+            transform: scale(20, 20);
+            opacity: 0;
+        }
+    }
+    
+    .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-secondary {
+        background: transparent;
+        border: 1px solid #3B82F6;
+        color: #3B82F6;
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.875rem;
+    }
+    
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .logo-container {
+        background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+        border-radius: 20px;
+        padding: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .course-card {
+        background: rgba(30, 30, 40, 0.6);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+    
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 31, 135, 0.3);
+        border-color: rgba(59, 130, 246, 0.5);
+    }
+    
+    .course-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .course-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .course-icon {
+        height: 120px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.2);
+        flex-shrink: 0;
+        position: relative;
+        font-size: 3rem;
+    }
+    
+    .course-icon::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .course-card:hover .course-icon::after {
+        opacity: 1;
+    }
+    
+    .badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+    
+    .badge-popular {
+        background: linear-gradient(90deg, #EC4899, #8B5CF6);
+    }
+    
+    .badge-essential {
+        background: linear-gradient(90deg, #F59E0B, #EF4444);
+    }
+    
+    .badge-hot {
+        background: linear-gradient(90deg, #EF4444, #F59E0B);
+    }
+    
+    .badge-trending {
+        background: linear-gradient(90deg, #3B82F6, #06B6D4);
+    }
+    
+    .badge-advanced {
+        background: linear-gradient(90deg, #8B5CF6, #EC4899);
+    }
+    
+    .badge-design {
+        background: linear-gradient(90deg, #EC4899, #F59E0B);
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+    
+    .user-avatar:hover {
+        transform: rotate(15deg);
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+    }
+    
+    .status-approved {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ADE80;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    
+    .status-pending {
+        background: rgba(245, 158, 11, 0.2);
+        color: #FBBF24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        animation: pulse 2s infinite;
+    }
+    
+    /* Toast Notification Styles */
+    .toast-container {
+        position: fixed;
+        top: 90px;
+        right: 10px;
+        left: 10px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+    
+    .toast {
+        padding: 15px 20px;
+        border-radius: 10px;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 100%;
+        animation: slideInRight 0.3s ease-out;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        pointer-events: auto;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .toast::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 4px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: scaleX(1);
+        transform-origin: left;
+        animation: toastProgress 5s linear forwards;
+    }
+    
+    @keyframes toastProgress {
+        to { transform: scaleX(0); }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    .toast-success {
+        background: linear-gradient(90deg, #10B981, #34D399);
+        border-left: 4px solid #059669;
+    }
+    
+    .toast-error {
+        background: linear-gradient(90deg, #EF4444, #F87171);
+        border-left: 4px solid #DC2626;
+    }
+    
+    .toast-info {
+        background: linear-gradient(90deg, #3B82F6, #60A5FA);
+        border-left: 4px solid #2563EB;
+    }
+    
+    .toast-warning {
+        background: linear-gradient(90deg, #F59E0B, #FBBF24);
+        border-left: 4px solid #D97706;
+    }
+    
+    .toast.hiding {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    
+    footer {
+        margin-top: auto;
+        padding: 30px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(15, 23, 42, 0.7);
+    }
+    
+    /* Background animation */
+    .bg-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+    }
+    
+    .bg-circle {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+        animation: float 15s infinite linear;
+    }
+    
+    @keyframes float {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(20px, 20px) rotate(180deg); }
+        100% { transform: translate(0, 0) rotate(360deg); }
+    }
+    
+    /* Category Filter */
+    .category-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .filter-btn {
+        padding: 8px 16px;
+        border-radius: 20px;
+        background: rgba(30, 30, 40, 0.6);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #93C5FD;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-btn.active, .filter-btn:hover {
+        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        color: white;
+    }
+    
+    /* Stats Cards */
+    .stats-card {
+        background: rgba(30, 30, 40, 0.6);
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 5px;
+    }
+    
+    /* Responsive adjustments */
+    @media (min-width: 640px) {
+        .toast-container {
+            right: 20px;
+            left: auto;
+            max-width: 400px;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+        }
+        
+        .status-badge {
+            font-size: 0.8rem;
+        }
+    }
+    
+    @media (min-width: 768px) {
+        .course-icon {
+            height: 150px;
+            font-size: 4rem;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .btn {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+        
+        .category-filter {
+            justify-content: center;
+        }
+    }
+    
+    /* Improved touch targets for mobile */
+    @media (max-width: 768px) {
+        .btn, .filter-btn, .course-card {
+            min-height: 44px;
+        }
+    }
+    
+    /* Loading spinner */
+    .spinner {
+        border: 3px solid rgba(59, 130, 246, 0.3);
+        border-radius: 50%;
+        border-top: 3px solid #3B82F6;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+<body>
+    <!-- Background Animation -->
+    <div class="bg-animation">
+        <div class="bg-circle" style="width: 300px; height: 300px; top: 10%; left: 10%; animation-delay: 0s;"></div>
+        <div class="bg-circle" style="width: 200px; height: 200px; top: 60%; left: 80%; animation-delay: 5s;"></div>
+        <div class="bg-circle" style="width: 250px; height: 250px; top: 30%; left: 70%; animation-delay: 10s;"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Navigation -->
+    <nav class="glass-morph sticky top-0 z-50" style="position: sticky; top: 0;">
+        <div class="max-w-6xl mx-auto px-4 py-3 sm:py-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+                <div class="flex items-center space-x-3">
+                    <div class="logo-container pulse">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                            <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                            <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </div>
+                    <span class="text-xl font-bold gradient-text">LyxSpace Courses</span>
+                </div>
+                <div class="flex flex-col xs:flex-row items-center space-y-2 xs:space-y-0 xs:space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="text-center xs:text-left">
+                            <div class="font-medium text-sm sm:text-base">{{ current_user.username or current_user.mobile }}</div>
+                            <div class="status-badge {% if current_user.is_allowed %}status-approved{% else %}status-pending{% endif %}">
+                                {% if current_user.is_allowed %}Approved{% else %}Pending Approval{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <a href="{{ url_for('files') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-folder"></i> <span class="hidden xs:inline">Files</span>
+                        </a>
+                        {% if current_user.id == 1 %}
+                            <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-cog"></i> <span class="hidden xs:inline">Admin</span>
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-sign-out-alt"></i> <span class="hidden xs:inline">Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-6 sm:py-8 flex-grow w-full">
+        <!-- Header Section -->
+        <section class="text-center mb-8 sm:mb-12">
+            <h1 class="text-3xl sm:text-4xl font-bold gradient-text mb-4">Explore Our Courses</h1>
+            <p class="text-gray-300 text-lg max-w-3xl mx-auto">Master in-demand skills with our comprehensive courses designed for beginners and advanced learners alike.</p>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="stats-card">
+                <div class="stats-number">{{ courses|length }}</div>
+                <div class="text-gray-400 text-sm">Courses Available</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-number">4</div>
+                <div class="text-gray-400 text-sm">Learning Paths</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-number">146</div>
+                <div class="text-gray-400 text-sm">Total Lessons</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-number">3.2K+</div>
+                <div class="text-gray-400 text-sm">Students Enrolled</div>
+            </div>
+        </section>
+
+        <!-- Category Filter -->
+        <section class="mb-8">
+            <h2 class="text-xl font-bold gradient-text mb-4">Filter by Category</h2>
+            <div class="category-filter">
+                <button class="filter-btn active" data-filter="all">All Courses</button>
+                {% for category in categories %}
+                <button class="filter-btn" data-filter="{{ category|lower|replace(' ', '-') }}">{{ category }}</button>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Courses Grid -->
+        <section>
+            <h2 class="text-xl sm:text-2xl font-bold gradient-text mb-4 sm:mb-6">Available Courses</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="coursesGrid">
+                {% for course in courses %}
+                <div class="course-card" data-category="{{ course.category|lower|replace(' ', '-') }}">
+                    {% if course.badge %}
+                    <div class="badge badge-{{ course.badge|lower }}">{{ course.badge }}</div>
+                    {% endif %}
+                    <div class="course-icon bg-gradient-to-r {{ course.color }} text-white">
+                        <i class="fab {{ course.icon }}"></i>
+                    </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <h3 class="text-lg font-bold mb-2">{{ course.title }}</h3>
+                        <p class="text-gray-400 text-sm mb-4 flex-grow">{{ course.description }}</p>
+                        
+                        <div class="flex justify-between text-xs text-gray-500 mb-4">
+                            <span><i class="fas fa-clock mr-1"></i> {{ course.duration }}</span>
+                            <span><i class="fas fa-book-open mr-1"></i> {{ course.lessons }} lessons</span>
+                            <span><i class="fas fa-signal mr-1"></i> {{ course.level }}</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center mt-auto">
+                            <span class="text-xs px-2 py-1 rounded bg-gray-800">{{ course.category }}</span>
+                            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-sm">
+                                <i class="fas fa-eye mr-1"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="glass-morph p-6 sm:p-8 rounded-2xl text-center mt-12">
+            <h2 class="text-2xl font-bold gradient-text mb-4">Ready to Start Learning?</h2>
+            <p class="text-gray-300 mb-6 max-w-2xl mx-auto">Join thousands of students who have transformed their careers with LyxSpace courses. No prior experience required.</p>
+            <a href="#coursesGrid" class="btn pulse">
+                <i class="fas fa-rocket mr-2"></i> Explore All Courses
+            </a>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center py-4">
+                <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                    <div class="logo-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                            <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                            <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </div>
+                    <span class="text-lg font-bold gradient-text">LyxSpace</span>
+                </div>
+                <div class="text-gray-400 text-sm text-center md:text-left mb-4 md:mb-0">
+                    &copy; 2025 LyxSpace. All rights reserved.
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors" aria-label="Twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-purple-500 transition-colors" aria-label="Discord">
+                        <i class="fab fa-discord"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-red-500 transition-colors" aria-label="YouTube">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Toast notification system
+        function showToast(message, type = 'info', duration = 5000) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            // Icon based on type
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            else if (type === 'error') icon = 'fa-exclamation-circle';
+            else if (type === 'warning') icon = 'fa-exclamation-triangle';
+            
+            toast.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span class="flex-1 text-sm sm:text-base">${message}</span>
+                <button class="ml-2 text-white opacity-70 hover:opacity-100 focus:outline-none" onclick="this.parentElement.remove()" aria-label="Dismiss notification">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.parentElement.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        // Category Filter Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const courseCards = document.querySelectorAll('.course-card');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    const filterValue = this.getAttribute('data-filter');
+                    
+                    courseCards.forEach(card => {
+                        if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
+                            card.style.display = 'flex';
+                            card.classList.add('animate__animated', 'animate__fadeIn');
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // Show welcome toast
+            showToast('Explore our curated courses designed for your learning journey!', 'info', 4000);
+        });
+    </script>
+</body>
+</html>

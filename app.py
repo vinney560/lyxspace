@@ -251,7 +251,7 @@ def upload_file():
 def download_file(file_id):
     security_answer = request.json.get('security_answer', '')
     
-    # Security check - you can customize this
+    # Security check
     if security_answer.lower() != 'lyxspace2025':
         return jsonify({'error': 'Security check failed'}), 403
     
@@ -274,7 +274,167 @@ def get_file(file_id):
     else:
         folder = app.config['UPLOAD_FOLDER']
     return send_file(os.path.join(folder, file_data.filepath))
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+# Courses Route
+@app.route("/courses")
+@login_required
+def courses():
+    # Sample course data - in production, this would come from a database
+    courses_data = [
+        {
+            'id': 1,
+            'title': 'Ubuntu & Linux Mastery',
+            'description': 'Complete guide to Linux command line, system administration, and shell scripting',
+            'icon': 'fa-terminal',
+            'level': 'Beginner to Advanced',
+            'duration': '6 weeks',
+            'lessons': 24,
+            'category': 'System Administration',
+            'color': 'from-green-500 to-emerald-600',
+            'badge': 'Popular'
+        },
+        {
+            'id': 2,
+            'title': 'HTML5 & CSS3 Fundamentals',
+            'description': 'Build modern, responsive websites with latest HTML5 and CSS3 features',
+            'icon': 'fa-code',
+            'level': 'Beginner',
+            'duration': '4 weeks',
+            'lessons': 18,
+            'category': 'Web Development',
+            'color': 'from-orange-500 to-red-500',
+            'badge': 'Essential'
+        },
+        {
+            'id': 3,
+            'title': 'JavaScript Programming',
+            'description': 'Master JavaScript from basics to advanced concepts and modern frameworks',
+            'icon': 'fa-js-square',
+            'level': 'Intermediate',
+            'duration': '8 weeks',
+            'lessons': 32,
+            'category': 'Web Development',
+            'color': 'from-yellow-500 to-amber-600',
+            'badge': 'Hot'
+        },
+        {
+            'id': 4,
+            'title': 'Python Development',
+            'description': 'Learn Python programming, web development with Django/Flask, and data science',
+            'icon': 'fa-python',
+            'level': 'Beginner to Advanced',
+            'duration': '10 weeks',
+            'lessons': 40,
+            'category': 'Programming',
+            'color': 'from-blue-500 to-cyan-500',
+            'badge': 'Trending'
+        },
+        {
+            'id': 5,
+            'title': 'Linux Server Administration',
+            'description': 'Advanced Linux server management, security, and deployment strategies',
+            'icon': 'fa-server',
+            'level': 'Advanced',
+            'duration': '5 weeks',
+            'lessons': 20,
+            'category': 'System Administration',
+            'color': 'from-purple-500 to-pink-500',
+            'badge': 'Advanced'
+        },
+        {
+            'id': 6,
+            'title': 'Responsive Web Design',
+            'description': 'Create mobile-first, responsive designs with CSS Grid, Flexbox, and frameworks',
+            'icon': 'fa-laptop-code',
+            'level': 'Intermediate',
+            'duration': '3 weeks',
+            'lessons': 12,
+            'category': 'Web Development',
+            'color': 'from-pink-500 to-rose-500',
+            'badge': 'Design'
+        }
+    ]
+    
+    categories = list(set([course['category'] for course in courses_data]))
+    
+    return render_template("courses.html", courses=courses_data, categories=categories)
 
+#--------------------------------------------------------------------
+# Course Detail Route
+@app.route("/course/<int:course_id>")
+@login_required
+def course_detail(course_id):
+    # Sample course detail - in production, this would come from a database
+    course_details = {
+        1: {
+            'title': 'Ubuntu & Linux Mastery',
+            'description': 'Complete guide to Linux command line, system administration, and shell scripting',
+            'long_description': 'This comprehensive course takes you from Linux beginner to proficient system administrator. You\'ll learn essential command line skills, file system management, user administration, networking, security, and automation with shell scripting.',
+            'icon': 'fa-terminal',
+            'level': 'Beginner to Advanced',
+            'duration': '6 weeks',
+            'lessons': 24,
+            'projects': 5,
+            'category': 'System Administration',
+            'color': 'from-green-500 to-emerald-600',
+            'instructor': 'Alex Johnson',
+            'rating': 4.8,
+            'students': 1250,
+            'price': '$49.99',
+            'modules': [
+                {'title': 'Linux Fundamentals', 'lessons': 6, 'duration': '2 weeks'},
+                {'title': 'Command Line Mastery', 'lessons': 5, 'duration': '1.5 weeks'},
+                {'title': 'File System Management', 'lessons': 4, 'duration': '1 week'},
+                {'title': 'User & Permission Management', 'lessons': 3, 'duration': '1 week'},
+                {'title': 'Networking & Security', 'lessons': 3, 'duration': '1 week'},
+                {'title': 'Shell Scripting', 'lessons': 3, 'duration': '1.5 weeks'}
+            ],
+            'resources': 15,
+            'quizzes': 6
+        },
+        2: {
+            'title': 'HTML5 & CSS3 Fundamentals',
+            'description': 'Build modern, responsive websites with latest HTML5 and CSS3 features',
+            'long_description': 'Start your web development journey with this comprehensive HTML5 and CSS3 course. Learn semantic HTML, CSS layouts, responsive design, animations, and modern web development practices.',
+            'icon': 'fa-code',
+            'level': 'Beginner',
+            'duration': '4 weeks',
+            'lessons': 18,
+            'projects': 4,
+            'category': 'Web Development',
+            'color': 'from-orange-500 to-red-500',
+            'instructor': 'Sarah Miller',
+            'rating': 4.6,
+            'students': 890,
+            'price': '$39.99',
+            'modules': [
+                {'title': 'HTML5 Basics', 'lessons': 4, 'duration': '1 week'},
+                {'title': 'CSS3 Fundamentals', 'lessons': 5, 'duration': '1 week'},
+                {'title': 'Layouts & Positioning', 'lessons': 4, 'duration': '1 week'},
+                {'title': 'Responsive Design', 'lessons': 3, 'duration': '1 week'},
+                {'title': 'Advanced CSS Features', 'lessons': 2, 'duration': '1 week'}
+            ],
+            'resources': 12,
+            'quizzes': 4
+        }
+    }
+    
+    course = course_details.get(course_id)
+    if not course:
+        flash("Course not found", "error")
+        return redirect(url_for('courses'))
+    
+    return render_template("course_detail.html", course=course)
+
+#--------------------------------------------------------------------
+# Enroll in Course Route
+@app.route("/course/<int:course_id>/enroll", methods=['POST'])
+@login_required
+def enroll_course(course_id):
+    # In production, this would add the user to the course in the database
+    flash(f"Successfully enrolled in the course!", "success")
+    return redirect(url_for('course_detail', course_id=course_id))
 #--------------------------------------------------------------------
 @app.route("/admin")
 @login_required
@@ -328,6 +488,26 @@ def delete_file(file_id):
     flash("File deleted successfully.", "success")
     return redirect(url_for('admin_panel'))
 
+#--------------------------------------------------------------------
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(403)
+def forbidden_error(error):
+    return render_template('403.html'), 403
+
+@app.errorhandler(500)
+def internal_error(error):
+    app.logger.error(f'Internal Server Error: {error}', exc_info=True)
+    flash('Oops! Something went wrong. Try again.', 'error')
+
+    # Fallback to home if referrer is not available
+    referrer = request.referrer
+    if referrer:
+        return redirect(referrer), 302
+    else:
+        return redirect(url_for('home')), 302
 #--------------------------------------------------------------------
 # Initialize database
 with app.app_context():
