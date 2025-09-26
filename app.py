@@ -280,7 +280,6 @@ def get_file(file_id):
 @app.route("/courses")
 @login_required
 def courses():
-    # Sample course data - in production, this would come from a database
     courses_data = [
         {
             'id': 1,
@@ -321,7 +320,7 @@ def courses():
         {
             'id': 4,
             'title': 'Python Development',
-            'description': 'Learn Python programming, web development with Django/Flask, and data science',
+            'description': 'Learn Python programming, web development with Flask, and data science',
             'icon': 'fa-python',
             'level': 'Beginner to Advanced',
             'duration': '10 weeks',
@@ -365,7 +364,6 @@ def courses():
 @app.route("/course/<int:course_id>")
 @login_required
 def course_detail(course_id):
-    # Sample course detail - in production, this would come from a database
     course_details = {
         1: {
             'id': 1,
@@ -379,10 +377,10 @@ def course_detail(course_id):
             'projects': 5,
             'category': 'System Administration',
             'color': 'from-green-500 to-emerald-600',
-            'instructor': 'Alex Johnson',
+            'instructor': 'Mr. Lyxin',
             'rating': 4.8,
             'students': 1250,
-            'price': '$49.99',
+            'price': 'Ksh.40',
             'modules': [
                 {'title': 'Linux Fundamentals', 'lessons': 6, 'duration': '2 weeks'},
                 {'title': 'Command Line Mastery', 'lessons': 5, 'duration': '1.5 weeks'},
@@ -406,10 +404,10 @@ def course_detail(course_id):
             'projects': 4,
             'category': 'Web Development',
             'color': 'from-orange-500 to-red-500',
-            'instructor': 'Sarah Miller',
+            'instructor': 'Mr. Lyxin',
             'rating': 4.6,
             'students': 890,
-            'price': '$39.99',
+            'price': 'Ksh.20',
             'modules': [
                 {'title': 'HTML5 Basics', 'lessons': 4, 'duration': '1 week'},
                 {'title': 'CSS3 Fundamentals', 'lessons': 5, 'duration': '1 week'},
@@ -432,10 +430,10 @@ def course_detail(course_id):
             'projects': 6,
             'category': 'Web Development',
             'color': 'from-yellow-500 to-amber-600',
-            'instructor': 'Mike Chen',
+            'instructor': 'Mr. Vincent',
             'rating': 4.7,
             'students': 2100,
-            'price': '$59.99',
+            'price': 'Ksh.55',
             'modules': [
                 {'title': 'JavaScript Basics', 'lessons': 6, 'duration': '1.5 weeks'},
                 {'title': 'DOM Manipulation', 'lessons': 5, 'duration': '1.5 weeks'},
@@ -459,10 +457,10 @@ def course_detail(course_id):
             'projects': 8,
             'category': 'Programming',
             'color': 'from-blue-500 to-cyan-500',
-            'instructor': 'Dr. Emily Watson',
+            'instructor': 'Mr. Lyxin',
             'rating': 4.9,
             'students': 3500,
-            'price': '$69.99',
+            'price': 'Ksh.70',
             'modules': [
                 {'title': 'Python Fundamentals', 'lessons': 8, 'duration': '2 weeks'},
                 {'title': 'Data Structures', 'lessons': 6, 'duration': '1.5 weeks'},
@@ -487,10 +485,10 @@ def course_detail(course_id):
             'projects': 4,
             'category': 'System Administration',
             'color': 'from-purple-500 to-pink-500',
-            'instructor': 'Raj Patel',
+            'instructor': 'Mr. Vincent',
             'rating': 4.8,
             'students': 980,
-            'price': '$79.99',
+            'price': 'Ksh.45',
             'modules': [
                 {'title': 'Server Setup & Configuration', 'lessons': 4, 'duration': '1 week'},
                 {'title': 'Service Management', 'lessons': 4, 'duration': '1 week'},
@@ -514,10 +512,10 @@ def course_detail(course_id):
             'projects': 3,
             'category': 'Web Development',
             'color': 'from-pink-500 to-rose-500',
-            'instructor': 'Lisa Thompson',
+            'instructor': 'Mr. Lyxin',
             'rating': 4.5,
             'students': 1200,
-            'price': '$34.99',
+            'price': 'Ksh.200',
             'modules': [
                 {'title': 'CSS Grid Mastery', 'lessons': 3, 'duration': '1 week'},
                 {'title': 'Flexbox Techniques', 'lessons': 3, 'duration': '1 week'},
@@ -541,7 +539,6 @@ def course_detail(course_id):
 @app.route("/course/<int:course_id>/enroll", methods=['POST'])
 @login_required
 def enroll_course(course_id):
-    # In production, this would add the user to the course in the database
     # Get course title for the flash message
     course_details = {
         1: {'title': 'Ubuntu & Linux Mastery'},
