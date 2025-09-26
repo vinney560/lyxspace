@@ -133,6 +133,7 @@ def home():
 #--------------------------------------------------------------------
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+    next_page = request.args.get("next") or request.form.get("next")
     if request.method == 'POST':
         mobile = request.form.get('mobile')
         username = request.form.get('username')
@@ -154,7 +155,7 @@ def login():
         
         login_user(user)
         flash("Login successful!", "success")
-        return redirect(url_for('files'))
+        return redirect(next_page or url_for('files'))
     
     return render_template("login.html")
 

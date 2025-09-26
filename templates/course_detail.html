@@ -148,103 +148,6 @@
         justify-content: center;
     }
     
-    .course-card {
-        background: rgba(30, 30, 40, 0.6);
-        border-radius: 15px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        position: relative;
-    }
-    
-    .course-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 40px rgba(0, 31, 135, 0.3);
-        border-color: rgba(59, 130, 246, 0.5);
-    }
-    
-    .course-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
-        transform: scaleX(0);
-        transition: transform 0.3s ease;
-    }
-    
-    .course-card:hover::before {
-        transform: scaleX(1);
-    }
-    
-    .course-icon {
-        height: 120px;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(0, 0, 0, 0.2);
-        flex-shrink: 0;
-        position: relative;
-        font-size: 3rem;
-    }
-    
-    .course-icon::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    .course-card:hover .course-icon::after {
-        opacity: 1;
-    }
-    
-    .badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        z-index: 2;
-    }
-    
-    .badge-popular {
-        background: linear-gradient(90deg, #EC4899, #8B5CF6);
-    }
-    
-    .badge-essential {
-        background: linear-gradient(90deg, #F59E0B, #EF4444);
-    }
-    
-    .badge-hot {
-        background: linear-gradient(90deg, #EF4444, #F59E0B);
-    }
-    
-    .badge-trending {
-        background: linear-gradient(90deg, #3B82F6, #06B6D4);
-    }
-    
-    .badge-advanced {
-        background: linear-gradient(90deg, #8B5CF6, #EC4899);
-    }
-    
-    .badge-design {
-        background: linear-gradient(90deg, #EC4899, #F59E0B);
-    }
-    
     .user-avatar {
         width: 40px;
         height: 40px;
@@ -399,46 +302,91 @@
         100% { transform: translate(0, 0) rotate(360deg); }
     }
     
-    /* Category Filter */
-    .category-filter {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
-    
-    .filter-btn {
-        padding: 8px 16px;
-        border-radius: 20px;
+    /* Course Detail Specific Styles */
+    .module-item {
         background: rgba(30, 30, 40, 0.6);
-        border: 1px solid rgba(59, 130, 246, 0.3);
-        color: #93C5FD;
-        cursor: pointer;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 4px solid #3B82F6;
         transition: all 0.3s ease;
+        cursor: pointer;
     }
     
-    .filter-btn.active, .filter-btn:hover {
+    .module-item:hover {
+        transform: translateX(5px);
+        background: rgba(30, 30, 40, 0.8);
+        border-left-color: #8B5CF6;
+    }
+    
+    .progress-bar {
+        height: 6px;
+        background: rgba(59, 130, 246, 0.3);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+    
+    .progress-fill {
+        height: 100%;
         background: linear-gradient(90deg, #3B82F6, #8B5CF6);
-        color: white;
+        border-radius: 3px;
+        transition: width 0.5s ease;
     }
     
-    /* Stats Cards */
-    .stats-card {
+    .instructor-card {
         background: rgba(30, 30, 40, 0.6);
         border-radius: 15px;
         padding: 20px;
         text-align: center;
         border: 1px solid rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease;
     }
     
-    .stats-number {
-        font-size: 2.5rem;
-        font-weight: 700;
-        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 5px;
+    .instructor-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .feature-item:last-child {
+        border-bottom: none;
+    }
+    
+    .rating-stars {
+        color: #F59E0B;
+        margin-right: 5px;
+    }
+    
+    .lesson-list {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .module-item.expanded .lesson-list {
+        max-height: 500px;
+    }
+    
+    .lesson-item {
+        padding: 10px 15px;
+        background: rgba(0, 0, 0, 0.2);
+        margin: 5px 0;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .lesson-duration {
+        font-size: 0.8rem;
+        color: #93C5FD;
     }
     
     /* Responsive adjustments */
@@ -460,27 +408,16 @@
         }
     }
     
-    @media (min-width: 768px) {
-        .course-icon {
-            height: 150px;
-            font-size: 4rem;
-        }
-    }
-    
     @media (max-width: 640px) {
         .btn {
             padding: 8px 16px;
             font-size: 0.875rem;
         }
-        
-        .category-filter {
-            justify-content: center;
-        }
     }
     
     /* Improved touch targets for mobile */
     @media (max-width: 768px) {
-        .btn, .filter-btn, .course-card {
+        .btn, .module-item {
             min-height: 44px;
         }
     }
@@ -500,59 +437,178 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-
-    .module-item {
-        background: rgba(30, 30, 40, 0.6);
+    
+    /* Course Icon Styles */
+    .course-icon-large {
+        font-size: 4rem;
+        background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 20px;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin: 20px 0;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 15px;
+        background: rgba(30, 30, 40, 0.4);
+        border-radius: 10px;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: #93C5FD;
+    }
+    
+    /* Review Section */
+    .review-item {
+        background: rgba(30, 30, 40, 0.4);
         border-radius: 10px;
         padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 10px;
-        border-left: 4px solid #3B82F6;
-        transition: all 0.3s ease;
     }
     
-    .module-item:hover {
-        transform: translateX(5px);
-        background: rgba(30, 30, 40, 0.8);
+    .reviewer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
     
-    .progress-bar {
-        height: 6px;
-        background: rgba(59, 130, 246, 0.3);
-        border-radius: 3px;
-        overflow: hidden;
-    }
-    
-    .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
-        border-radius: 3px;
-        transition: width 0.5s ease;
-    }
-    
-    .instructor-card {
-        background: rgba(30, 30, 40, 0.6);
-        border-radius: 15px;
-        padding: 20px;
-        text-align: center;
-        border: 1px solid rgba(59, 130, 246, 0.3);
+    .reviewer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
     }
 </style>
 <body>
-    <!-- Navigation and toast container same as courses.html -->
-    
-    <main class="max-w-4xl mx-auto px-4 py-6 sm:py-8 flex-grow w-full">
+    <!-- Background Animation -->
+    <div class="bg-animation">
+        <div class="bg-circle" style="width: 300px; height: 300px; top: 10%; left: 10%; animation-delay: 0s;"></div>
+        <div class="bg-circle" style="width: 200px; height: 200px; top: 60%; left: 80%; animation-delay: 5s;"></div>
+        <div class="bg-circle" style="width: 250px; height: 250px; top: 30%; left: 70%; animation-delay: 10s;"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Navigation -->
+    <nav class="glass-morph sticky top-0 z-50" style="position: sticky; top: 0;">
+        <div class="max-w-6xl mx-auto px-4 py-3 sm:py-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+                <div class="flex items-center space-x-3">
+                    <a href="{{ url_for('courses') }}" class="logo-container pulse">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                            <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                            <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </a>
+                    <span class="text-xl font-bold gradient-text">LyxSpace Courses</span>
+                </div>
+                <div class="flex flex-col xs:flex-row items-center space-y-2 xs:space-y-0 xs:space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="text-center xs:text-left">
+                            <div class="font-medium text-sm sm:text-base">{{ current_user.username or current_user.mobile }}</div>
+                            <div class="status-badge {% if current_user.is_allowed %}status-approved{% else %}status-pending{% endif %}">
+                                {% if current_user.is_allowed %}Approved{% else %}Pending Approval{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <a href="{{ url_for('files') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-folder"></i> <span class="hidden xs:inline">Files</span>
+                        </a>
+                        <a href="{{ url_for('courses') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-graduation-cap"></i> <span class="hidden xs:inline">Courses</span>
+                        </a>
+                        {% if current_user.id == 1 %}
+                            <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-cog"></i> <span class="hidden xs:inline">Admin</span>
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-sign-out-alt"></i> <span class="hidden xs:inline">Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-6 sm:py-8 flex-grow w-full">
+        <!-- Back Button -->
+        <div class="mb-6">
+            <a href="{{ url_for('courses') }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Courses
+            </a>
+        </div>
+
         <!-- Course Header -->
         <section class="glass-morph p-6 rounded-2xl mb-8 text-center">
-            <div class="text-5xl mb-4 bg-gradient-to-r {{ course.color }} text-white w-20 h-20 rounded-full flex items-center justify-center mx-auto">
+            <div class="course-icon-large">
                 <i class="fab {{ course.icon }}"></i>
             </div>
             <h1 class="text-2xl sm:text-3xl font-bold gradient-text mb-2">{{ course.title }}</h1>
-            <p class="text-gray-300 mb-4">{{ course.long_description }}</p>
-            <div class="flex flex-wrap justify-center gap-4 text-sm text-gray-400">
+            <p class="text-gray-300 mb-4 max-w-3xl mx-auto">{{ course.long_description }}</p>
+            
+            <div class="flex flex-wrap justify-center gap-4 text-sm text-gray-400 mb-6">
                 <span><i class="fas fa-clock mr-1"></i> {{ course.duration }}</span>
                 <span><i class="fas fa-book-open mr-1"></i> {{ course.lessons }} lessons</span>
                 <span><i class="fas fa-project-diagram mr-1"></i> {{ course.projects }} projects</span>
                 <span><i class="fas fa-signal mr-1"></i> {{ course.level }}</span>
+                <span><i class="fas fa-download mr-1"></i> {{ course.resources }} resources</span>
+            </div>
+            
+            <div class="stats-grid max-w-md mx-auto">
+                <div class="stat-item">
+                    <div class="stat-value text-blue-400">{{ course.rating }}/5.0</div>
+                    <div class="stat-label">Course Rating</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value text-green-400">{{ course.students }}+</div>
+                    <div class="stat-label">Students Enrolled</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value text-purple-400">{{ course.quizzes }}</div>
+                    <div class="stat-label">Coding Exercises</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value text-yellow-400">{{ course.modules|length }}</div>
+                    <div class="stat-label">Learning Modules</div>
+                </div>
             </div>
         </section>
 
@@ -562,41 +618,151 @@
                 <!-- Course Overview -->
                 <section class="glass-morph p-6 rounded-2xl mb-6">
                     <h2 class="text-xl font-bold gradient-text mb-4">Course Overview</h2>
-                    <p class="text-gray-300 mb-4">{{ course.long_description }}</p>
+                    <p class="text-gray-300 mb-6">{{ course.long_description }}</p>
                     
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="text-center p-4 bg-gray-800/30 rounded-lg">
-                            <div class="text-2xl font-bold text-blue-400">{{ course.rating }}/5.0</div>
-                            <div class="text-sm text-gray-400">Course Rating</div>
-                        </div>
-                        <div class="text-center p-4 bg-gray-800/30 rounded-lg">
-                            <div class="text-2xl font-bold text-green-400">{{ course.students }}+</div>
-                            <div class="text-sm text-gray-400">Students Enrolled</div>
-                        </div>
-                    </div>
+                    <h3 class="text-lg font-semibold mb-3">What You'll Learn</h3>
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-6">
+                        <li class="flex items-center text-sm"><i class="fas fa-check text-green-400 mr-2"></i> Master core concepts and fundamentals</li>
+                        <li class="flex items-center text-sm"><i class="fas fa-check text-green-400 mr-2"></i> Build real-world projects</li>
+                        <li class="flex items-center text-sm"><i class="fas fa-check text-green-400 mr-2"></i> Develop problem-solving skills</li>
+                        <li class="flex items-center text-sm"><i class="fas fa-check text-green-400 mr-2"></i> Prepare for technical interviews</li>
+                        <li class="flex items-center text-sm"><i class="fas fa-check text-green-400 mr-2"></i> Join a community of learners</li>
+                        <li class="flex items-center text-sm"><i class="fas fa-check text-green-400 mr-2"></i> Get certificate of completion</li>
+                    </ul>
                     
-                    <form action="{{ url_for('enroll_course', course_id=course.id) }}" method="POST">
-                        <button type="submit" class="btn w-full pulse">
+                    <form action="{{ url_for('enroll_course', course_id=course.id) }}" method="POST" class="text-center">
+                        <button type="submit" class="btn pulse text-lg px-8 py-3">
                             <i class="fas fa-play-circle mr-2"></i> Enroll Now - {{ course.price }}
                         </button>
+                        <p class="text-gray-400 text-sm mt-2">30-day money-back guarantee</p>
                     </form>
                 </section>
 
-                <!-- Course Modules -->
+                <!-- Course Curriculum -->
                 <section class="glass-morph p-6 rounded-2xl mb-6">
                     <h2 class="text-xl font-bold gradient-text mb-4">Course Curriculum</h2>
+                    <p class="text-gray-400 text-sm mb-4">Expand each module to see lesson details</p>
+                    
                     <div class="space-y-3">
                         {% for module in course.modules %}
-                        <div class="module-item">
+                        <div class="module-item" onclick="toggleModule(this)">
                             <div class="flex justify-between items-center">
-                                <div>
+                                <div class="flex-1">
                                     <h3 class="font-semibold">{{ module.title }}</h3>
                                     <p class="text-sm text-gray-400">{{ module.lessons }} lessons • {{ module.duration }}</p>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 0%"></div>
+                                    </div>
                                 </div>
-                                <i class="fas fa-chevron-right text-gray-400"></i>
+                                <i class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+                            </div>
+                            
+                            <div class="lesson-list mt-3">
+                                {% for i in range(module.lessons) %}
+                                <div class="lesson-item">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-play-circle text-blue-400 mr-3"></i>
+                                        <span>Lesson {{ i+1 }}: {{ module.title }} Concept {{ i+1 }}</span>
+                                    </div>
+                                    <span class="lesson-duration">15 min</span>
+                                </div>
+                                {% endfor %}
+                                
+                                {% if module.lessons > 3 %}
+                                <div class="lesson-item bg-gradient-to-r from-blue-500/20 to-purple-500/20">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-tasks text-green-400 mr-3"></i>
+                                        <span>Practice Exercise</span>
+                                    </div>
+                                    <span class="lesson-duration">30 min</span>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                         {% endfor %}
+                    </div>
+                </section>
+
+                <!-- Student Reviews -->
+                <section class="glass-morph p-6 rounded-2xl">
+                    <h2 class="text-xl font-bold gradient-text mb-4">Student Reviews</h2>
+                    
+                    <div class="flex items-center mb-6">
+                        <div class="mr-4">
+                            <div class="text-3xl font-bold">{{ course.rating }}</div>
+                            <div class="rating-stars">
+                                {% for i in range(5) %}
+                                    {% if i < course.rating|int %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="text-sm text-gray-400">{{ course.students }} reviews</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center mb-1">
+                                <span class="text-sm w-16">5 stars</span>
+                                <div class="h-2 bg-gray-700 rounded-full flex-1 mx-2">
+                                    <div class="h-full bg-yellow-400 rounded-full" style="width: 75%"></div>
+                                </div>
+                                <span class="text-sm">75%</span>
+                            </div>
+                            <div class="flex items-center mb-1">
+                                <span class="text-sm w-16">4 stars</span>
+                                <div class="h-2 bg-gray-700 rounded-full flex-1 mx-2">
+                                    <div class="h-full bg-yellow-400 rounded-full" style="width: 15%"></div>
+                                </div>
+                                <span class="text-sm">15%</span>
+                            </div>
+                            <div class="flex items-center mb-1">
+                                <span class="text-sm w-16">3 stars</span>
+                                <div class="h-2 bg-gray-700 rounded-full flex-1 mx-2">
+                                    <div class="h-full bg-yellow-400 rounded-full" style="width: 7%"></div>
+                                </div>
+                                <span class="text-sm">7%</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm w-16">2 stars</span>
+                                <div class="h-2 bg-gray-700 rounded-full flex-1 mx-2">
+                                    <div class="h-full bg-yellow-400 rounded-full" style="width: 3%"></div>
+                                </div>
+                                <span class="text-sm">3%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="reviewer">
+                                <div class="reviewer-avatar">JD</div>
+                                <div>
+                                    <div class="font-semibold">John Doe</div>
+                                    <div class="rating-stars text-sm">
+                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-sm text-gray-400">2 weeks ago</span>
+                        </div>
+                        <p class="text-gray-300">This course completely transformed my understanding of {{ course.title.split(' ')[0] }}. The instructor explains complex concepts in a way that's easy to understand.</p>
+                    </div>
+                    
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="reviewer">
+                                <div class="reviewer-avatar">SJ</div>
+                                <div>
+                                    <div class="font-semibold">Sarah Johnson</div>
+                                    <div class="rating-stars text-sm">
+                                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-sm text-gray-400">1 month ago</span>
+                        </div>
+                        <p class="text-gray-300">The projects were challenging but rewarding. I now feel confident applying these skills in real-world scenarios.</p>
                     </div>
                 </section>
             </div>
@@ -607,44 +773,83 @@
                 <section class="glass-morph p-6 rounded-2xl mb-6">
                     <h2 class="text-xl font-bold gradient-text mb-4">Instructor</h2>
                     <div class="instructor-card">
-                        <div class="w-16 h-16 bg-gradient-to-r {{ course.color }} rounded-full flex items-center justify-center text-white text-2xl mb-3 mx-auto">
-                            <i class="fas fa-user"></i>
+                        <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl mb-3 mx-auto">
+                            {{ course.instructor[0] }}
                         </div>
-                        <h3 class="font-bold">{{ course.instructor }}</h3>
+                        <h3 class="font-bold text-lg">{{ course.instructor }}</h3>
                         <p class="text-sm text-gray-400 mb-3">Senior Instructor</p>
-                        <p class="text-xs text-gray-300">5+ years experience teaching programming and system administration</p>
+                        <p class="text-xs text-gray-300 mb-4">5+ years experience teaching programming and system administration. Passionate about helping students achieve their goals.</p>
+                        <div class="flex justify-center space-x-4 text-sm">
+                            <div class="text-center">
+                                <div class="font-bold">4.9</div>
+                                <div class="text-gray-400">Rating</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-bold">2.5K</div>
+                                <div class="text-gray-400">Students</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-bold">8</div>
+                                <div class="text-gray-400">Courses</div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                <!-- Course Stats -->
-                <section class="glass-morph p-6 rounded-2xl">
-                    <h2 class="text-xl font-bold gradient-text mb-4">Course Includes</h2>
+                <!-- Course Features -->
+                <section class="glass-morph p-6 rounded-2xl mb-6">
+                    <h2 class="text-xl font-bold gradient-text mb-4">This Course Includes</h2>
                     <div class="space-y-3">
-                        <div class="flex items-center text-sm">
+                        <div class="feature-item">
                             <i class="fas fa-play-circle text-blue-400 mr-3"></i>
-                            <span>{{ course.lessons }} on-demand lessons</span>
+                            <span>{{ course.lessons }} on-demand video lessons</span>
                         </div>
-                        <div class="flex items-center text-sm">
+                        <div class="feature-item">
                             <i class="fas fa-clock text-green-400 mr-3"></i>
                             <span>{{ course.duration }} of content</span>
                         </div>
-                        <div class="flex items-center text-sm">
+                        <div class="feature-item">
                             <i class="fas fa-file-download text-purple-400 mr-3"></i>
                             <span>{{ course.resources }} downloadable resources</span>
                         </div>
-                        <div class="flex items-center text-sm">
+                        <div class="feature-item">
                             <i class="fas fa-tasks text-yellow-400 mr-3"></i>
                             <span>{{ course.quizzes }} coding exercises</span>
                         </div>
-                        <div class="flex items-center text-sm">
-                            <i class="fas fa-certificate text-red-400 mr-3"></i>
+                        <div class="feature-item">
+                            <i class="fas fa-mobile-alt text-pink-400 mr-3"></i>
+                            <span>Access on mobile and TV</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-infinity text-red-400 mr-3"></i>
+                            <span>Full lifetime access</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-certificate text-indigo-400 mr-3"></i>
                             <span>Certificate of completion</span>
                         </div>
+                    </div>
+                </section>
+
+                <!-- Share Course -->
+                <section class="glass-morph p-6 rounded-2xl">
+                    <h2 class="text-xl font-bold gradient-text mb-4">Share This Course</h2>
+                    <div class="flex space-x-3">
+                        <button class="btn btn-secondary flex-1 text-sm">
+                            <i class="fab fa-twitter mr-1"></i> Twitter
+                        </button>
+                        <button class="btn btn-secondary flex-1 text-sm">
+                            <i class="fab fa-linkedin mr-1"></i> LinkedIn
+                        </button>
+                        <button class="btn btn-secondary flex-1 text-sm">
+                            <i class="fab fa-facebook mr-1"></i> Facebook
+                        </button>
                     </div>
                 </section>
             </div>
         </div>
     </main>
+
     <!-- Footer -->
     <footer class="w-full">
         <div class="max-w-6xl mx-auto px-4">
@@ -682,5 +887,86 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        // Toast notification system
+        function showToast(message, type = 'info', duration = 5000) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            // Icon based on type
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            else if (type === 'error') icon = 'fa-exclamation-circle';
+            else if (type === 'warning') icon = 'fa-exclamation-triangle';
+            
+            toast.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span class="flex-1 text-sm sm:text-base">${message}</span>
+                <button class="ml-2 text-white opacity-70 hover:opacity-100 focus:outline-none" onclick="this.parentElement.remove()" aria-label="Dismiss notification">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.parentElement.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        // Toggle module expansion
+        function toggleModule(moduleElement) {
+            const isExpanded = moduleElement.classList.contains('expanded');
+            const icon = moduleElement.querySelector('.fa-chevron-down');
+            
+            // Close all other modules
+            document.querySelectorAll('.module-item').forEach(item => {
+                if (item !== moduleElement) {
+                    item.classList.remove('expanded');
+                    item.querySelector('.fa-chevron-down').style.transform = 'rotate(0deg)';
+                }
+            });
+            
+            // Toggle current module
+            moduleElement.classList.toggle('expanded');
+            
+            if (moduleElement.classList.contains('expanded')) {
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Initialize progress bars with random values (for demo)
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const randomWidth = Math.floor(Math.random() * 30) + 10; // 10-40%
+                bar.style.width = `${randomWidth}%`;
+            });
+            
+            // Show welcome toast
+            showToast('Explore the course curriculum and see what you\'ll learn!', 'info', 4000);
+        });
+
+        // Handle enrollment form submission
+        document.querySelector('form[action*="enroll"]')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            showToast('Enrolling in course...', 'info', 2000);
+            
+            // Simulate API call
+            setTimeout(() => {
+                this.submit();
+            }, 1500);
+        });
+    </script>
 </body>
 </html>
