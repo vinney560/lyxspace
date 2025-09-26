@@ -34,7 +34,7 @@ def database():
 
 app.config["SQLALCHEMY_DATABASE_URI"] = database()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
+app.config["SESSION_TYPE"] = "filesystem"
 # File upload configuration
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'}
@@ -125,7 +125,15 @@ def load_user(user_id):
     except OperationalError as e:
         print("Database connection lost", e)
         return None
-
+#--------------------------------------------------------------------
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(hours=732)
+#--------------------------------------------------------------------
+@app.route('/is_authenticated')
+def is_authenticated():
+    return jsonify({'authenticated': current_user.is_authenticated})
 #--------------------------------------------------------------------
 @app.route("/")
 def home():
@@ -133,14 +141,15 @@ def home():
 #--------------------------------------------------------------------
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        # Already logged in, redirect to main page
+        return redirect(url_for('files'))
     next_page = request.args.get("next") or request.form.get("next")
     if request.method == 'POST':
         mobile = request.form.get('mobile')
         username = request.form.get('username')
-        
         # Check if user exists
         user = User.query.filter_by(mobile=mobile).first()
-        
         if not user:
             # Create new user
             user = User(mobile=mobile, username=username, allowed="no")
@@ -152,11 +161,9 @@ def login():
             if username and user.username != username:
                 user.username = username
                 db.session.commit()
-        
         login_user(user)
         flash("Login successful!", "success")
         return redirect(next_page or url_for('files'))
-    
     return render_template("login.html")
 
 #--------------------------------------------------------------------
