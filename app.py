@@ -413,14 +413,6 @@ def course_detail(course_id):
         # Get enrollment count
         enrollment_count = Enrollment.query.filter_by(course_id=course_id, is_active=True).count()
         
-        # Get user progress if enrolled
-        progress = None
-        if enrollment:
-            progress = UserProgress.query.filter_by(
-                user_id=current_user.id, 
-                course_id=course_id
-            ).all()
-        
         # Convert to dictionary for template
         course_data = {
             'id': course.id,
@@ -438,6 +430,8 @@ def course_detail(course_id):
             'rating': course.rating,
             'students': int(enrollment_count) if enrollment_count is not None else 0,
             'price': f"${course.price:.2f}" if course.price > 0 else "Free",
+
+            # ✅ modules stays a list
             'modules': [
                 {
                     'title': module.title,
@@ -446,8 +440,11 @@ def course_detail(course_id):
                     'id': module.id
                 } for module in modules
             ] if modules else [],
-            'resources': course.resources if isinstance(course.resources, list) else [],
-            'quizzes': course.quizzes if isinstance(course.quizzes, list) else [],
+
+            # ✅ Keep these as integers
+            'resources': course.resources or 0,
+            'quizzes': course.quizzes or 0,
+
             'is_enrolled': enrollment is not None,
             'progress': enrollment.progress if enrollment else 0.0
         }
