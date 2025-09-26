@@ -370,7 +370,7 @@ def courses():
                 'icon': course.icon,
                 'level': course.level,
                 'duration': course.duration,
-                'lessons': course.lessons,
+                'lessons': int(course.lessons) if course.lessons is not None else 0,
                 'category': course.category,
                 'color': course.color,
                 'badge': 'Popular' if enrollment_count > 100 else 'New',
@@ -545,13 +545,34 @@ def my_courses():
             user_id=current_user.id, 
             is_active=True
         ).join(Course).order_by(Enrollment.enrolled_at.desc()).all()
-        
-        return render_template("my_courses.html", enrollments=enrollments)
-        
+
+        # Build a list of course dicts for the template
+        courses_list = []
+        for enrollment in enrollments:
+            course = enrollment.course
+            courses_list.append({
+                'id': course.id,
+                'title': course.title,
+                'description': course.description,
+                'icon': course.icon,
+                'level': course.level,
+                'duration': course.duration,
+                'lessons': course.lessons,
+                'category': course.category,
+                'color': course.color,
+                'badge': 'Popular' if Enrollment.query.filter_by(course_id=course.id, is_active=True).count() > 100 else 'New',
+                'enrollment_count': Enrollment.query.filter_by(course_id=course.id, is_active=True).count(),
+                'is_enrolled': True,
+                'progress': enrollment.progress,
+                'enrolled_at': enrollment.enrolled_at
+            })
+
+        return render_template("my_courses.html", courses=courses_list)
+
     except Exception as e:
         flash("Error loading your courses. Please try again.", "error")
         print(f"Error in my_courses route: {e}")
-        return render_template("my_courses.html", enrollments=[])
+        return render_template("my_courses.html", courses=[])
 
 #--------------------------------------------------------------------
 # Update Progress Route (AJAX)

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Courses | LyxSpace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<style>
+    :root {
+        --bg-color: #111827;
+        --text-color: #F9FAFB;
+        --accent-color: #4A90E2;
+        --secondary-color: #8B5CF6;
+    }
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: var(--text-color);
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .gradient-text {
+        background: linear-gradient(90deg, #3B82F6, #8B5CF6, #EC4899);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        background-size: 200% auto;
+        animation: gradientShift 3s ease infinite;
+    }
+    @keyframes gradientShift {
+        0% { background-position: 0% center; }
+        50% { background-position: 100% center; }
+        100% { background-position: 0% center; }
+    }
+    .glass-morph {
+        background: rgba(30, 30, 40, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 8px 32px rgba(0, 31, 135, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease;
+    }
+    .glass-morph:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(59, 130, 246, 0.3);
+    }
+    .btn {
+        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        white-space: nowrap;
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-secondary {
+        background: transparent;
+        border: 1px solid #3B82F6;
+        color: #3B82F6;
+    }
+    .btn-secondary:hover {
+        background: rgba(59, 130, 246, 0.1);
+    }
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.875rem;
+    }
+    .course-card {
+        background: rgba(30, 30, 40, 0.6);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+    .course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 31, 135, 0.3);
+        border-color: rgba(59, 130, 246, 0.5);
+    }
+    .course-icon {
+        height: 120px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.2);
+        flex-shrink: 0;
+        position: relative;
+        font-size: 3rem;
+    }
+    .badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        z-index: 2;
+        background: linear-gradient(90deg, #EC4899, #8B5CF6);
+        color: white;
+    }
+    .progress-bar {
+        height: 6px;
+        background: rgba(59, 130, 246, 0.3);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+        border-radius: 3px;
+        transition: width 0.5s ease;
+    }
+</style>
+<body>
+    <!-- Navigation -->
+    <nav class="glass-morph sticky top-0 z-50" style="position: sticky; top: 0;">
+        <div class="max-w-6xl mx-auto px-4 py-3 sm:py-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+                <div class="flex items-center space-x-3">
+                    <a href="{{ url_for('courses') }}" class="logo-container pulse">
+                        <i class="fas fa-graduation-cap text-2xl text-white"></i>
+                    </a>
+                    <span class="text-xl font-bold gradient-text">My Courses</span>
+                </div>
+                <div class="flex flex-col xs:flex-row items-center space-y-2 xs:space-y-0 xs:space-x-4">
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> <span class="hidden xs:inline">Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-6 sm:py-8 flex-grow w-full">
+        <section class="text-center mb-8 sm:mb-12">
+            <h1 class="text-3xl sm:text-4xl font-bold gradient-text mb-4">Your Enrolled Courses</h1>
+            <p class="text-gray-300 text-lg max-w-3xl mx-auto">Track your progress and continue learning with your selected courses.</p>
+        </section>
+
+        <section>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for course in courses %}
+                <div class="course-card">
+                    <div class="course-icon">
+                        <i class="fab {{ course.icon }}"></i>
+                    </div>
+                    <span class="badge">{{ course.badge }}</span>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <h2 class="text-lg font-bold gradient-text mb-2">{{ course.title }}</h2>
+                        <p class="text-gray-300 mb-2">{{ course.description }}</p>
+                        <div class="flex flex-wrap gap-2 text-sm text-gray-400 mb-2">
+                            <span><i class="fas fa-clock mr-1"></i> {{ course.duration }}</span>
+                            <span><i class="fas fa-book-open mr-1"></i> {{ course.lessons }} lessons</span>
+                            <span><i class="fas fa-signal mr-1"></i> {{ course.level }}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ (course.progress * 100)|round|int }}%;"></div>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-2">Progress: {{ (course.progress * 100)|round|int }}%</div>
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-sm mt-4">Continue</a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-span-full text-center text-gray-400 py-12">
+                    <i class="fas fa-info-circle text-3xl mb-4"></i>
+                    <h2 class="text-xl font-bold mb-2">No courses enrolled yet</h2>
+                    <p class="mb-4">Browse our <a href="{{ url_for('courses') }}" class="gradient-text font-bold">courses</a> and start learning today!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <footer class="w-full">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center py-4">
+                <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                    <span class="font-bold gradient-text">LyxSpace</span>
+                </div>
+                <div class="text-gray-400 text-sm text-center md:text-left mb-4 md:mb-0">
+                    &copy; {{ now().year }} LyxSpace. All rights reserved.
+                </div>
+                <div class="flex space-x-4">
+                    <a href="https://twitter.com/lyxspace" target="_blank" class="text-blue-400 hover:text-blue-600"><i class="fab fa-twitter"></i></a>
+                    <a href="https://facebook.com/lyxspace" target="_blank" class="text-blue-600 hover:text-blue-800"><i class="fab fa-facebook"></i></a>
+                    <a href="https://github.com/lyxspace" target="_blank" class="text-gray-400 hover:text-gray-600"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
