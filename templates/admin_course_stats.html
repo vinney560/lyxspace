@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Statistics | LyxSpace Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-6">Course Statistics</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <div class="text-2xl font-bold text-blue-400">{{ stats.total_courses }}</div>
+                <div class="text-gray-400">Total Courses</div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <div class="text-2xl font-bold text-green-400">{{ stats.active_courses }}</div>
+                <div class="text-gray-400">Active Courses</div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <div class="text-2xl font-bold text-purple-400">{{ stats.total_enrollments }}</div>
+                <div class="text-gray-400">Total Enrollments</div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <div class="text-2xl font-bold text-yellow-400">{{ stats.completed_enrollments }}</div>
+                <div class="text-gray-400">Completed Courses</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h2 class="text-xl font-bold mb-4">Courses by Category</h2>
+                <div class="space-y-3">
+                    {% for category, count in stats.courses_by_category %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-300">{{ category }}</span>
+                        <span class="bg-blue-500 px-2 py-1 rounded text-sm">{{ count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h2 class="text-xl font-bold mb-4">Most Popular Courses</h2>
+                <div class="space-y-3">
+                    {% for title, count in stats.popular_courses %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-300 truncate">{{ title }}</span>
+                        <span class="bg-green-500 px-2 py-1 rounded text-sm">{{ count }} enrollments</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <a href="{{ url_for('admin_panel') }}" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Admin Panel
+            </a>
+        </div>
+    </div>
+</body>
+</html>

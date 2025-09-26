@@ -74,7 +74,72 @@ class File(db.Model):
     upload_date = db.Column(db.DateTime, default=nairobi_time)
     description = db.Column(db.Text)
     uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+# Enrollment and Course Models
+class Course(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    long_description = db.Column(db.Text)
+    icon = db.Column(db.String(50))
+    level = db.Column(db.String(100))
+    duration = db.Column(db.String(100))
+    lessons = db.Column(db.Integer)
+    projects = db.Column(db.Integer)
+    category = db.Column(db.String(100))
+    color = db.Column(db.String(100))
+    instructor = db.Column(db.String(255))
+    rating = db.Column(db.Float, default=0.0)
+    students = db.Column(db.Integer, default=0)
+    price = db.Column(db.Float, default=0.0)
+    resources = db.Column(db.Integer, default=0)
+    quizzes = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=nairobi_time)
 
+class CourseModule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    lessons = db.Column(db.Integer)
+    duration = db.Column(db.String(100))
+    order = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=nairobi_time)
+
+class Enrollment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    enrolled_at = db.Column(db.DateTime, default=nairobi_time)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    progress = db.Column(db.Float, default=0.0)  # 0.0 to 1.0
+    is_active = db.Column(db.Boolean, default=True)
+    
+    # Relationship for easy access
+    user = db.relationship('User', backref=db.backref('enrollments', lazy=True))
+    course = db.relationship('Course', backref=db.backref('enrollments', lazy=True))
+    
+    # Unique constraint to prevent duplicate enrollments
+    __table_args__ = (db.UniqueConstraint('user_id', 'course_id', name='unique_user_course'),)
+
+class UserProgress(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    module_id = db.Column(db.Integer, db.ForeignKey('course_module.id'), nullable=False)
+    lesson_id = db.Column(db.Integer)  # Could be linked to a Lesson model if you have one
+    completed = db.Column(db.Boolean, default=False)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    score = db.Column(db.Float, default=0.0)  # For quizzes/exercises
+    time_spent = db.Column(db.Integer, default=0)  # Time in seconds
+    last_accessed = db.Column(db.DateTime, default=nairobi_time)
+    
+    # Relationship
+    user = db.relationship('User', backref=db.backref('progress', lazy=True))
+    course = db.relationship('Course', backref=db.backref('progress', lazy=True))
+    module = db.relationship('CourseModule', backref=db.backref('progress', lazy=True))
 #--------------------------------------------------------------------
 def admin_required(f):
     @wraps(f)
@@ -283,282 +348,728 @@ def get_file(file_id):
         folder = app.config['UPLOAD_FOLDER']
     return send_file(os.path.join(folder, file_data.filepath))
 #--------------------------------------------------------------------
+#--------------------------------------------------------------------
 # Courses Route
 @app.route("/courses")
 @login_required
 def courses():
-    courses_data = [
-        {
-            'id': 1,
-            'title': 'Ubuntu & Linux Mastery',
-            'description': 'Complete guide to Linux command line, system administration, and shell scripting',
-            'icon': 'fa-terminal',
-            'level': 'Beginner to Advanced',
-            'duration': '6 weeks',
-            'lessons': 24,
-            'category': 'System Administration',
-            'color': 'from-green-500 to-emerald-600',
-            'badge': 'Popular'
-        },
-        {
-            'id': 2,
-            'title': 'HTML5 & CSS3 Fundamentals',
-            'description': 'Build modern, responsive websites with latest HTML5 and CSS3 features',
-            'icon': 'fa-code',
-            'level': 'Beginner',
-            'duration': '4 weeks',
-            'lessons': 18,
-            'category': 'Web Development',
-            'color': 'from-orange-500 to-red-500',
-            'badge': 'Essential'
-        },
-        {
-            'id': 3,
-            'title': 'JavaScript Programming',
-            'description': 'Master JavaScript from basics to advanced concepts and modern frameworks',
-            'icon': 'fa-js-square',
-            'level': 'Intermediate',
-            'duration': '8 weeks',
-            'lessons': 32,
-            'category': 'Web Development',
-            'color': 'from-yellow-500 to-amber-600',
-            'badge': 'Hot'
-        },
-        {
-            'id': 4,
-            'title': 'Python Development',
-            'description': 'Learn Python programming, web development with Flask, and data science',
-            'icon': 'fa-python',
-            'level': 'Beginner to Advanced',
-            'duration': '10 weeks',
-            'lessons': 40,
-            'category': 'Programming',
-            'color': 'from-blue-500 to-cyan-500',
-            'badge': 'Trending'
-        },
-        {
-            'id': 5,
-            'title': 'Linux Server Administration',
-            'description': 'Advanced Linux server management, security, and deployment strategies',
-            'icon': 'fa-server',
-            'level': 'Advanced',
-            'duration': '5 weeks',
-            'lessons': 20,
-            'category': 'System Administration',
-            'color': 'from-purple-500 to-pink-500',
-            'badge': 'Advanced'
-        },
-        {
-            'id': 6,
-            'title': 'Responsive Web Design',
-            'description': 'Create mobile-first, responsive designs with CSS Grid, Flexbox, and frameworks',
-            'icon': 'fa-laptop-code',
-            'level': 'Intermediate',
-            'duration': '3 weeks',
-            'lessons': 12,
-            'category': 'Web Development',
-            'color': 'from-pink-500 to-rose-500',
-            'badge': 'Design'
-        }
-    ]
-    
-    categories = list(set([course['category'] for course in courses_data]))
-    
-    return render_template("courses.html", courses=courses_data, categories=categories)
+    try:
+        # Get all active courses from database
+        courses_data = Course.query.filter_by(is_active=True).order_by(Course.created_at.desc()).all()
+        
+        # Convert to list of dictionaries for template
+        courses_list = []
+        for course in courses_data:
+            # Get enrollment count for this course
+            enrollment_count = Enrollment.query.filter_by(course_id=course.id, is_active=True).count()
+            
+            courses_list.append({
+                'id': course.id,
+                'title': course.title,
+                'description': course.description,
+                'icon': course.icon,
+                'level': course.level,
+                'duration': course.duration,
+                'lessons': course.lessons,
+                'category': course.category,
+                'color': course.color,
+                'badge': 'Popular' if enrollment_count > 100 else 'New',
+                'enrollment_count': enrollment_count,
+                'is_enrolled': Enrollment.query.filter_by(
+                    user_id=current_user.id, 
+                    course_id=course.id, 
+                    is_active=True
+                ).first() is not None
+            })
+        
+        categories = list(set([course['category'] for course in courses_list]))
+        
+        return render_template("courses.html", courses=courses_list, categories=categories)
+        
+    except Exception as e:
+        flash("Error loading courses. Please try again.", "error")
+        print(f"Error in courses route: {e}")
+        return render_template("courses.html", courses=[], categories=[])
 
 #--------------------------------------------------------------------
 # Course Detail Route
 @app.route("/course/<int:course_id>")
 @login_required
 def course_detail(course_id):
-    course_details = {
-        1: {
-            'id': 1,
-            'title': 'Ubuntu & Linux Mastery',
-            'description': 'Complete guide to Linux command line, system administration, and shell scripting',
-            'long_description': 'This comprehensive course takes you from Linux beginner to proficient system administrator. You\'ll learn essential command line skills, file system management, user administration, networking, security, and automation with shell scripting.',
-            'icon': 'fa-terminal',
-            'level': 'Beginner to Advanced',
-            'duration': '6 weeks',
-            'lessons': 24,
-            'projects': 5,
-            'category': 'System Administration',
-            'color': 'from-green-500 to-emerald-600',
-            'instructor': 'Mr. Lyxin',
-            'rating': 4.8,
-            'students': 1250,
-            'price': 'Ksh.40',
+    try:
+        # Get course from database
+        course = Course.query.filter_by(id=course_id, is_active=True).first_or_404()
+        
+        # Get modules for this course
+        modules = CourseModule.query.filter_by(course_id=course_id).order_by(CourseModule.order).all()
+        
+        # Check if user is enrolled
+        enrollment = Enrollment.query.filter_by(
+            user_id=current_user.id, 
+            course_id=course_id, 
+            is_active=True
+        ).first()
+        
+        # Get enrollment count
+        enrollment_count = Enrollment.query.filter_by(course_id=course_id, is_active=True).count()
+        
+        # Get user progress if enrolled
+        progress = None
+        if enrollment:
+            progress = UserProgress.query.filter_by(
+                user_id=current_user.id, 
+                course_id=course_id
+            ).all()
+        
+        # Convert to dictionary for template
+        course_data = {
+            'id': course.id,
+            'title': course.title,
+            'description': course.description,
+            'long_description': course.long_description,
+            'icon': course.icon,
+            'level': course.level,
+            'duration': course.duration,
+            'lessons': course.lessons,
+            'projects': course.projects,
+            'category': course.category,
+            'color': course.color,
+            'instructor': course.instructor,
+            'rating': course.rating,
+            'students': enrollment_count,  # Use actual enrollment count
+            'price': f"${course.price:.2f}" if course.price > 0 else "Free",
             'modules': [
-                {'title': 'Linux Fundamentals', 'lessons': 6, 'duration': '2 weeks'},
-                {'title': 'Command Line Mastery', 'lessons': 5, 'duration': '1.5 weeks'},
-                {'title': 'File System Management', 'lessons': 4, 'duration': '1 week'},
-                {'title': 'User & Permission Management', 'lessons': 3, 'duration': '1 week'},
-                {'title': 'Networking & Security', 'lessons': 3, 'duration': '1 week'},
-                {'title': 'Shell Scripting', 'lessons': 3, 'duration': '1.5 weeks'}
+                {
+                    'title': module.title,
+                    'lessons': module.lessons,
+                    'duration': module.duration,
+                    'id': module.id
+                } for module in modules
             ],
-            'resources': 15,
-            'quizzes': 6
-        },
-        2: {
-            'id': 2,
-            'title': 'HTML5 & CSS3 Fundamentals',
-            'description': 'Build modern, responsive websites with latest HTML5 and CSS3 features',
-            'long_description': 'Start your web development journey with this comprehensive HTML5 and CSS3 course. Learn semantic HTML, CSS layouts, responsive design, animations, and modern web development practices.',
-            'icon': 'fa-code',
-            'level': 'Beginner',
-            'duration': '4 weeks',
-            'lessons': 18,
-            'projects': 4,
-            'category': 'Web Development',
-            'color': 'from-orange-500 to-red-500',
-            'instructor': 'Mr. Lyxin',
-            'rating': 4.6,
-            'students': 890,
-            'price': 'Ksh.20',
-            'modules': [
-                {'title': 'HTML5 Basics', 'lessons': 4, 'duration': '1 week'},
-                {'title': 'CSS3 Fundamentals', 'lessons': 5, 'duration': '1 week'},
-                {'title': 'Layouts & Positioning', 'lessons': 4, 'duration': '1 week'},
-                {'title': 'Responsive Design', 'lessons': 3, 'duration': '1 week'},
-                {'title': 'Advanced CSS Features', 'lessons': 2, 'duration': '1 week'}
-            ],
-            'resources': 12,
-            'quizzes': 4
-        },
-        3: {
-            'id': 3,
-            'title': 'JavaScript Programming',
-            'description': 'Master JavaScript from basics to advanced concepts and modern frameworks',
-            'long_description': 'Dive deep into JavaScript programming with this comprehensive course. Learn everything from basic syntax to advanced concepts like closures, promises, async/await, and modern frameworks.',
-            'icon': 'fa-js-square',
-            'level': 'Intermediate',
-            'duration': '8 weeks',
-            'lessons': 32,
-            'projects': 6,
-            'category': 'Web Development',
-            'color': 'from-yellow-500 to-amber-600',
-            'instructor': 'Mr. Vincent',
-            'rating': 4.7,
-            'students': 2100,
-            'price': 'Ksh.55',
-            'modules': [
-                {'title': 'JavaScript Basics', 'lessons': 6, 'duration': '1.5 weeks'},
-                {'title': 'DOM Manipulation', 'lessons': 5, 'duration': '1.5 weeks'},
-                {'title': 'Advanced JavaScript', 'lessons': 6, 'duration': '2 weeks'},
-                {'title': 'Async Programming', 'lessons': 4, 'duration': '1 week'},
-                {'title': 'Modern Frameworks', 'lessons': 5, 'duration': '1.5 weeks'},
-                {'title': 'Project Development', 'lessons': 6, 'duration': '1.5 weeks'}
-            ],
-            'resources': 20,
-            'quizzes': 8
-        },
-        4: {
-            'id': 4,
-            'title': 'Python Development',
-            'description': 'Learn Python programming, web development with Django/Flask, and data science',
-            'long_description': 'Become a Python expert with this all-in-one course covering programming fundamentals, web development, data analysis, and automation. Perfect for beginners and those looking to advance their skills.',
-            'icon': 'fa-python',
-            'level': 'Beginner to Advanced',
-            'duration': '10 weeks',
-            'lessons': 40,
-            'projects': 8,
-            'category': 'Programming',
-            'color': 'from-blue-500 to-cyan-500',
-            'instructor': 'Mr. Lyxin',
-            'rating': 4.9,
-            'students': 3500,
-            'price': 'Ksh.70',
-            'modules': [
-                {'title': 'Python Fundamentals', 'lessons': 8, 'duration': '2 weeks'},
-                {'title': 'Data Structures', 'lessons': 6, 'duration': '1.5 weeks'},
-                {'title': 'Web Development', 'lessons': 7, 'duration': '2 weeks'},
-                {'title': 'Data Science', 'lessons': 6, 'duration': '1.5 weeks'},
-                {'title': 'Automation & Scripting', 'lessons': 5, 'duration': '1.5 weeks'},
-                {'title': 'Advanced Topics', 'lessons': 4, 'duration': '1 week'},
-                {'title': 'Capstone Project', 'lessons': 4, 'duration': '1.5 weeks'}
-            ],
-            'resources': 25,
-            'quizzes': 10
-        },
-        5: {
-            'id': 5,
-            'title': 'Linux Server Administration',
-            'description': 'Advanced Linux server management, security, and deployment strategies',
-            'long_description': 'Master Linux server administration with this advanced course. Learn about system services, security hardening, performance tuning, containerization, and enterprise deployment strategies.',
-            'icon': 'fa-server',
-            'level': 'Advanced',
-            'duration': '5 weeks',
-            'lessons': 20,
-            'projects': 4,
-            'category': 'System Administration',
-            'color': 'from-purple-500 to-pink-500',
-            'instructor': 'Mr. Vincent',
-            'rating': 4.8,
-            'students': 980,
-            'price': 'Ksh.45',
-            'modules': [
-                {'title': 'Server Setup & Configuration', 'lessons': 4, 'duration': '1 week'},
-                {'title': 'Service Management', 'lessons': 4, 'duration': '1 week'},
-                {'title': 'Security Hardening', 'lessons': 4, 'duration': '1 week'},
-                {'title': 'Performance Tuning', 'lessons': 3, 'duration': '1 week'},
-                {'title': 'Containerization & DevOps', 'lessons': 3, 'duration': '1 week'},
-                {'title': 'Enterprise Deployment', 'lessons': 2, 'duration': '1 week'}
-            ],
-            'resources': 18,
-            'quizzes': 5
-        },
-        6: {
-            'id': 6,
-            'title': 'Responsive Web Design',
-            'description': 'Create mobile-first, responsive designs with CSS Grid, Flexbox, and frameworks',
-            'long_description': 'Learn to create beautiful, responsive websites that work perfectly on all devices. Master CSS Grid, Flexbox, media queries, and modern design frameworks to build professional-grade web interfaces.',
-            'icon': 'fa-laptop-code',
-            'level': 'Intermediate',
-            'duration': '3 weeks',
-            'lessons': 12,
-            'projects': 3,
-            'category': 'Web Development',
-            'color': 'from-pink-500 to-rose-500',
-            'instructor': 'Mr. Lyxin',
-            'rating': 4.5,
-            'students': 1200,
-            'price': 'Ksh.200',
-            'modules': [
-                {'title': 'CSS Grid Mastery', 'lessons': 3, 'duration': '1 week'},
-                {'title': 'Flexbox Techniques', 'lessons': 3, 'duration': '1 week'},
-                {'title': 'Responsive Frameworks', 'lessons': 3, 'duration': '1 week'},
-                {'title': 'Advanced Layouts', 'lessons': 3, 'duration': '1 week'}
-            ],
-            'resources': 10,
-            'quizzes': 3
+            'resources': course.resources,
+            'quizzes': course.quizzes,
+            'is_enrolled': enrollment is not None,
+            'progress': enrollment.progress if enrollment else 0.0
         }
-    }
-    
-    course = course_details.get(course_id)
-    if not course:
-        flash("Course not found", "error")
+        
+        return render_template("course_detail.html", course=course_data)
+        
+    except Exception as e:
+        flash("Course not found or error loading course details.", "error")
+        print(f"Error in course_detail route: {e}")
         return redirect(url_for('courses'))
-    
-    return render_template("course_detail.html", course=course)
 
 #--------------------------------------------------------------------
 # Enroll in Course Route
 @app.route("/course/<int:course_id>/enroll", methods=['POST'])
 @login_required
 def enroll_course(course_id):
-    # Get course title for the flash message
-    course_details = {
-        1: {'title': 'Ubuntu & Linux Mastery'},
-        2: {'title': 'HTML5 & CSS3 Fundamentals'},
-        3: {'title': 'JavaScript Programming'},
-        4: {'title': 'Python Development'},
-        5: {'title': 'Linux Server Administration'},
-        6: {'title': 'Responsive Web Design'}
-    }
+    try:
+        # Check if course exists and is active
+        course = Course.query.filter_by(id=course_id, is_active=True).first()
+        if not course:
+            flash("Course not found or no longer available.", "error")
+            return redirect(url_for('courses'))
+        
+        # Check if user is already enrolled
+        existing_enrollment = Enrollment.query.filter_by(
+            user_id=current_user.id, 
+            course_id=course_id
+        ).first()
+        
+        if existing_enrollment:
+            if existing_enrollment.is_active:
+                flash(f"You are already enrolled in '{course.title}'.", "info")
+            else:
+                # Reactivate existing enrollment
+                existing_enrollment.is_active = True
+                existing_enrollment.enrolled_at = nairobi_time()
+                db.session.commit()
+                flash(f"Welcome back to '{course.title}'! Your enrollment has been reactivated.", "success")
+        else:
+            # Create new enrollment
+            enrollment = Enrollment(
+                user_id=current_user.id,
+                course_id=course_id,
+                enrolled_at=nairobi_time(),
+                progress=0.0,
+                is_active=True
+            )
+            db.session.add(enrollment)
+            db.session.commit()
+            flash(f"Successfully enrolled in '{course.title}'! Start your learning journey now.", "success")
+        
+        return redirect(url_for('course_detail', course_id=course_id))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash("Error enrolling in course. Please try again.", "error")
+        print(f"Error in enroll_course route: {e}")
+        return redirect(url_for('course_detail', course_id=course_id))
+
+#--------------------------------------------------------------------
+# Unenroll from Course Route
+@app.route("/course/<int:course_id>/unenroll", methods=['POST'])
+@login_required
+def unenroll_course(course_id):
+    try:
+        enrollment = Enrollment.query.filter_by(
+            user_id=current_user.id, 
+            course_id=course_id,
+            is_active=True
+        ).first()
+        
+        if enrollment:
+            enrollment.is_active = False
+            db.session.commit()
+            flash("You have been unenrolled from the course.", "info")
+        else:
+            flash("You are not enrolled in this course.", "warning")
+        
+        return redirect(url_for('courses'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash("Error unenrolling from course. Please try again.", "error")
+        print(f"Error in unenroll_course route: {e}")
+        return redirect(url_for('course_detail', course_id=course_id))
+
+#--------------------------------------------------------------------
+# My Courses Route - Dashboard for enrolled courses
+@app.route("/my-courses")
+@login_required
+def my_courses():
+    try:
+        # Get user's active enrollments with course details
+        enrollments = Enrollment.query.filter_by(
+            user_id=current_user.id, 
+            is_active=True
+        ).join(Course).order_by(Enrollment.enrolled_at.desc()).all()
+        
+        return render_template("my_courses.html", enrollments=enrollments)
+        
+    except Exception as e:
+        flash("Error loading your courses. Please try again.", "error")
+        print(f"Error in my_courses route: {e}")
+        return render_template("my_courses.html", enrollments=[])
+
+#--------------------------------------------------------------------
+# Update Progress Route (AJAX)
+@app.route("/api/course/<int:course_id>/progress", methods=['POST'])
+@login_required
+def update_progress(course_id):
+    try:
+        data = request.get_json()
+        lesson_id = data.get('lesson_id')
+        module_id = data.get('module_id')
+        completed = data.get('completed', False)
+        score = data.get('score', 0.0)
+        time_spent = data.get('time_spent', 0)
+        
+        # Check if user is enrolled
+        enrollment = Enrollment.query.filter_by(
+            user_id=current_user.id, 
+            course_id=course_id,
+            is_active=True
+        ).first()
+        
+        if not enrollment:
+            return jsonify({'error': 'Not enrolled in this course'}), 403
+        
+        # Update or create progress record
+        progress = UserProgress.query.filter_by(
+            user_id=current_user.id,
+            course_id=course_id,
+            module_id=module_id,
+            lesson_id=lesson_id
+        ).first()
+        
+        if progress:
+            progress.completed = completed
+            progress.score = max(progress.score, score)  # Keep highest score
+            progress.time_spent += time_spent
+            progress.last_accessed = nairobi_time()
+            if completed and not progress.completed_at:
+                progress.completed_at = nairobi_time()
+        else:
+            progress = UserProgress(
+                user_id=current_user.id,
+                course_id=course_id,
+                module_id=module_id,
+                lesson_id=lesson_id,
+                completed=completed,
+                score=score,
+                time_spent=time_spent,
+                last_accessed=nairobi_time()
+            )
+            if completed:
+                progress.completed_at = nairobi_time()
+            db.session.add(progress)
+        
+        # Update overall course progress
+        total_lessons = CourseModule.query.filter_by(course_id=course_id).with_entities(
+            db.func.sum(CourseModule.lessons)
+        ).scalar() or 0
+        
+        if total_lessons > 0:
+            completed_lessons = UserProgress.query.filter_by(
+                user_id=current_user.id,
+                course_id=course_id,
+                completed=True
+            ).count()
+            
+            enrollment.progress = min(completed_lessons / total_lessons, 1.0)
+            
+            # Mark as completed if progress is 100%
+            if enrollment.progress >= 1.0 and not enrollment.completed_at:
+                enrollment.completed_at = nairobi_time()
+                # You could trigger a certificate generation here
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'progress': enrollment.progress,
+            'completed_lessons': completed_lessons,
+            'total_lessons': total_lessons
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error in update_progress route: {e}")
+        return jsonify({'error': 'Failed to update progress'}), 500
+
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
+# Admin Route to Add Comprehensive Sample Courses
+@app.route("/admin/seed-courses")
+@login_required
+@admin_required
+def seed_courses():
+    try:
+        # Comprehensive sample courses data
+        sample_courses = [
+            # Ubuntu & Linux Courses
+            {
+                'title': 'Ubuntu & Linux Mastery',
+                'description': 'Complete guide to Linux command line, system administration, and shell scripting',
+                'long_description': 'This comprehensive course takes you from Linux beginner to proficient system administrator. You\'ll learn essential command line skills, file system management, user administration, networking, security, and automation with shell scripting. Perfect for aspiring DevOps engineers and system administrators.',
+                'icon': 'fa-terminal',
+                'level': 'Beginner to Advanced',
+                'duration': '6 weeks',
+                'lessons': 24,
+                'projects': 5,
+                'category': 'System Administration',
+                'color': 'from-green-500 to-emerald-600',
+                'instructor': 'Mr. Vincent',
+                'rating': 4.8,
+                'price': 49.99,
+                'resources': 15,
+                'quizzes': 6,
+                'modules': [
+                    {'title': 'Linux Fundamentals & Installation', 'lessons': 4, 'duration': '1 week', 'order': 1},
+                    {'title': 'Command Line Mastery', 'lessons': 5, 'duration': '1.5 weeks', 'order': 2},
+                    {'title': 'File System & Permissions', 'lessons': 4, 'duration': '1 week', 'order': 3},
+                    {'title': 'User & Process Management', 'lessons': 3, 'duration': '1 week', 'order': 4},
+                    {'title': 'Networking & Security', 'lessons': 4, 'duration': '1 week', 'order': 5},
+                    {'title': 'Shell Scripting & Automation', 'lessons': 4, 'duration': '1.5 weeks', 'order': 6}
+                ]
+            },
+            {
+                'title': 'Linux Server Administration',
+                'description': 'Advanced Linux server management, security, and deployment strategies',
+                'long_description': 'Master enterprise-level Linux server administration with this advanced course. Learn about system services, security hardening, performance tuning, containerization, and enterprise deployment strategies. Essential for DevOps professionals and system architects.',
+                'icon': 'fa-server',
+                'level': 'Advanced',
+                'duration': '5 weeks',
+                'lessons': 20,
+                'projects': 4,
+                'category': 'System Administration',
+                'color': 'from-purple-500 to-pink-500',
+                'instructor': 'Mr. Lyxin',
+                'rating': 4.8,
+                'price': 79.99,
+                'resources': 18,
+                'quizzes': 5,
+                'modules': [
+                    {'title': 'Server Setup & Configuration', 'lessons': 4, 'duration': '1 week', 'order': 1},
+                    {'title': 'Service Management (Systemd)', 'lessons': 4, 'duration': '1 week', 'order': 2},
+                    {'title': 'Security Hardening & Firewalls', 'lessons': 4, 'duration': '1 week', 'order': 3},
+                    {'title': 'Performance Monitoring & Tuning', 'lessons': 3, 'duration': '1 week', 'order': 4},
+                    {'title': 'Containerization with Docker', 'lessons': 3, 'duration': '1 week', 'order': 5},
+                    {'title': 'Enterprise Deployment Strategies', 'lessons': 2, 'duration': '1 week', 'order': 6}
+                ]
+            },
+            {
+                'title': 'Bash Shell Scripting Mastery',
+                'description': 'Automate tasks and master shell scripting for system administration',
+                'long_description': 'Learn to write powerful bash scripts to automate repetitive tasks, manage systems, and create efficient workflows. From basic scripts to advanced automation techniques, this course will make you a shell scripting expert.',
+                'icon': 'fa-code',
+                'level': 'Intermediate',
+                'duration': '4 weeks',
+                'lessons': 16,
+                'projects': 3,
+                'category': 'System Administration',
+                'color': 'from-blue-500 to-cyan-500',
+                'instructor': 'Ms. Marion',
+                'rating': 4.6,
+                'price': 39.99,
+                'resources': 12,
+                'quizzes': 4,
+                'modules': [
+                    {'title': 'Bash Fundamentals', 'lessons': 3, 'duration': '1 week', 'order': 1},
+                    {'title': 'Variables & Control Structures', 'lessons': 4, 'duration': '1 week', 'order': 2},
+                    {'title': 'Functions & Advanced Scripting', 'lessons': 4, 'duration': '1 week', 'order': 3},
+                    {'title': 'System Automation & Scheduling', 'lessons': 3, 'duration': '1 week', 'order': 4},
+                    {'title': 'Real-world Scripting Projects', 'lessons': 2, 'duration': '1 week', 'order': 5}
+                ]
+            },
+
+            # HTML & CSS Courses
+            {
+                'title': 'HTML5 & CSS3 Fundamentals',
+                'description': 'Build modern, responsive websites with latest HTML5 and CSS3 features',
+                'long_description': 'Start your web development journey with this comprehensive HTML5 and CSS3 course. Learn semantic HTML, CSS layouts, responsive design, animations, and modern web development practices. Perfect for beginners starting their frontend development career.',
+                'icon': 'fa-html5',
+                'level': 'Beginner',
+                'duration': '4 weeks',
+                'lessons': 18,
+                'projects': 4,
+                'category': 'Web Development',
+                'color': 'from-orange-500 to-red-500',
+                'instructor': 'Mr. Vincent',
+                'rating': 4.6,
+                'price': 39.99,
+                'resources': 12,
+                'quizzes': 4,
+                'modules': [
+                    {'title': 'HTML5 Basics & Semantic Elements', 'lessons': 4, 'duration': '1 week', 'order': 1},
+                    {'title': 'CSS3 Fundamentals & Styling', 'lessons': 5, 'duration': '1 week', 'order': 2},
+                    {'title': 'Layouts & Positioning Techniques', 'lessons': 4, 'duration': '1 week', 'order': 3},
+                    {'title': 'Responsive Design & Media Queries', 'lessons': 3, 'duration': '1 week', 'order': 4},
+                    {'title': 'Advanced CSS Features & Animations', 'lessons': 2, 'duration': '1 week', 'order': 5}
+                ]
+            },
+            {
+                'title': 'Responsive Web Design',
+                'description': 'Create mobile-first, responsive designs with CSS Grid, Flexbox, and frameworks',
+                'long_description': 'Learn to create beautiful, responsive websites that work perfectly on all devices. Master CSS Grid, Flexbox, media queries, and modern design frameworks to build professional-grade web interfaces that adapt to any screen size.',
+                'icon': 'fa-laptop-code',
+                'level': 'Intermediate',
+                'duration': '3 weeks',
+                'lessons': 12,
+                'projects': 3,
+                'category': 'Web Development',
+                'color': 'from-pink-500 to-rose-500',
+                'instructor': 'Mr. Lyxin',
+                'rating': 4.5,
+                'price': 34.99,
+                'resources': 10,
+                'quizzes': 3,
+                'modules': [
+                    {'title': 'CSS Grid Mastery', 'lessons': 3, 'duration': '1 week', 'order': 1},
+                    {'title': 'Flexbox Techniques & Layouts', 'lessons': 3, 'duration': '1 week', 'order': 2},
+                    {'title': 'Responsive Frameworks (Bootstrap)', 'lessons': 3, 'duration': '1 week', 'order': 3},
+                    {'title': 'Advanced Responsive Patterns', 'lessons': 3, 'duration': '1 week', 'order': 4}
+                ]
+            },
+            {
+                'title': 'Advanced CSS & Sass',
+                'description': 'Master advanced CSS techniques, preprocessors, and modern workflow',
+                'long_description': 'Take your CSS skills to the next level with advanced techniques, Sass preprocessor, CSS architecture, and modern development workflows. Learn to write maintainable, scalable CSS for large projects.',
+                'icon': 'fa-sass',
+                'level': 'Advanced',
+                'duration': '4 weeks',
+                'lessons': 16,
+                'projects': 3,
+                'category': 'Web Development',
+                'color': 'from-purple-500 to-indigo-500',
+                'instructor': 'Mr. Lyxin',
+                'rating': 4.7,
+                'price': 49.99,
+                'resources': 14,
+                'quizzes': 4,
+                'modules': [
+                    {'title': 'Sass Fundamentals & Mixins', 'lessons': 4, 'duration': '1 week', 'order': 1},
+                    {'title': 'CSS Architecture & Methodologies', 'lessons': 4, 'duration': '1 week', 'order': 2},
+                    {'title': 'Advanced Animations & Transitions', 'lessons': 4, 'duration': '1 week', 'order': 3},
+                    {'title': 'Performance Optimization', 'lessons': 4, 'duration': '1 week', 'order': 4}
+                ]
+            },
+
+            # JavaScript Courses
+            {
+                'title': 'JavaScript Programming',
+                'description': 'Master JavaScript from basics to advanced concepts and modern frameworks',
+                'long_description': 'Dive deep into JavaScript programming with this comprehensive course. Learn everything from basic syntax to advanced concepts like closures, promises, async/await, and modern frameworks. Become a proficient JavaScript developer ready for real-world projects.',
+                'icon': 'fa-js-square',
+                'level': 'Intermediate',
+                'duration': '8 weeks',
+                'lessons': 32,
+                'projects': 6,
+                'category': 'Web Development',
+                'color': 'from-yellow-500 to-amber-600',
+                'instructor': 'Mr. Lyxin',
+                'rating': 4.7,
+                'price': 59.99,
+                'resources': 20,
+                'quizzes': 8,
+                'modules': [
+                    {'title': 'JavaScript Basics & Fundamentals', 'lessons': 6, 'duration': '1.5 weeks', 'order': 1},
+                    {'title': 'DOM Manipulation & Events', 'lessons': 5, 'duration': '1.5 weeks', 'order': 2},
+                    {'title': 'Advanced JavaScript Concepts', 'lessons': 6, 'duration': '2 weeks', 'order': 3},
+                    {'title': 'Async Programming & APIs', 'lessons': 4, 'duration': '1 week', 'order': 4},
+                    {'title': 'Modern Frameworks Overview', 'lessons': 5, 'duration': '1.5 weeks', 'order': 5},
+                    {'title': 'Project Development & Best Practices', 'lessons': 6, 'duration': '1.5 weeks', 'order': 6}
+                ]
+            },
+            {
+                'title': 'React.js Development',
+                'description': 'Build modern web applications with React.js and ecosystem',
+                'long_description': 'Learn to build scalable, maintainable web applications using React.js. Master components, hooks, state management, routing, and the entire React ecosystem including Redux, Context API, and modern testing practices.',
+                'icon': 'fa-react',
+                'level': 'Intermediate',
+                'duration': '6 weeks',
+                'lessons': 24,
+                'projects': 4,
+                'category': 'Web Development',
+                'color': 'from-blue-400 to-cyan-400',
+                'instructor': 'Mr. Lyxin',
+                'rating': 4.8,
+                'price': 69.99,
+                'resources': 18,
+                'quizzes': 6,
+                'modules': [
+                    {'title': 'React Fundamentals & JSX', 'lessons': 4, 'duration': '1 week', 'order': 1},
+                    {'title': 'Components & Props', 'lessons': 4, 'duration': '1 week', 'order': 2},
+                    {'title': 'State Management & Hooks', 'lessons': 5, 'duration': '1.5 weeks', 'order': 3},
+                    {'title': 'Routing & API Integration', 'lessons': 4, 'duration': '1 week', 'order': 4},
+                    {'title': 'Advanced Patterns & Performance', 'lessons': 4, 'duration': '1 week', 'order': 5},
+                    {'title': 'Testing & Deployment', 'lessons': 3, 'duration': '1.5 weeks', 'order': 6}
+                ]
+            },
+            {
+                'title': 'Node.js Backend Development',
+                'description': 'Build scalable server-side applications with Node.js and Express',
+                'long_description': 'Master backend development with Node.js. Learn to build RESTful APIs, work with databases, implement authentication, and deploy production-ready applications. Essential for full-stack developers.',
+                'icon': 'fa-node-js',
+                'level': 'Intermediate',
+                'duration': '5 weeks',
+                'lessons': 20,
+                'projects': 4,
+                'category': 'Web Development',
+                'color': 'from-green-500 to-green-700',
+                'instructor': 'Mr. Lyxin',
+                'rating': 4.6,
+                'price': 59.99,
+                'resources': 16,
+                'quizzes': 5,
+                'modules': [
+                    {'title': 'Node.js Fundamentals', 'lessons': 4, 'duration': '1 week', 'order': 1},
+                    {'title': 'Express.js & Middleware', 'lessons': 4, 'duration': '1 week', 'order': 2},
+                    {'title': 'Database Integration', 'lessons': 4, 'duration': '1 week', 'order': 3},
+                    {'title': 'Authentication & Security', 'lessons': 4, 'duration': '1 week', 'order': 4},
+                    {'title': 'API Development & Deployment', 'lessons': 4, 'duration': '1 week', 'order': 5}
+                ]
+            },
+
+            # Python Courses
+            {
+                'title': 'Python Development',
+                'description': 'Learn Python programming, web development with Django/Flask, and data science',
+                'long_description': 'Become a Python expert with this all-in-one course covering programming fundamentals, web development, data analysis, and automation. Perfect for beginners and those looking to advance their skills in one of the most versatile programming languages.',
+                'icon': 'fa-python',
+                'level': 'Beginner to Advanced',
+                'duration': '10 weeks',
+                'lessons': 40,
+                'projects': 8,
+                'category': 'Programming',
+                'color': 'from-blue-500 to-cyan-500',
+                'instructor': 'Mr. Lyxin',
+                'rating': 4.9,
+                'price': 69.99,
+                'resources': 25,
+                'quizzes': 10,
+                'modules': [
+                    {'title': 'Python Fundamentals', 'lessons': 8, 'duration': '2 weeks', 'order': 1},
+                    {'title': 'Data Structures & Algorithms', 'lessons': 6, 'duration': '1.5 weeks', 'order': 2},
+                    {'title': 'Web Development with Flask', 'lessons': 7, 'duration': '2 weeks', 'order': 3},
+                    {'title': 'Data Science & Analysis', 'lessons': 6, 'duration': '1.5 weeks', 'order': 4},
+                    {'title': 'Automation & Scripting', 'lessons': 5, 'duration': '1.5 weeks', 'order': 5},
+                    {'title': 'Advanced Python Topics', 'lessons': 4, 'duration': '1 week', 'order': 6},
+                    {'title': 'Capstone Project', 'lessons': 4, 'duration': '1.5 weeks', 'order': 7}
+                ]
+            },
+            {
+                'title': 'Flask Web Framework',
+                'description': 'Build powerful web applications with Flask and Python',
+                'long_description': 'Master the Flask web framework to build robust, scalable web applications. Learn about routing, templates, forms, authentication, and deployment. Perfect for Python developers wanting to build production-ready web applications.',
+                'icon': 'fa-code',
+                'level': 'Intermediate',
+                'duration': '6 weeks',
+                'lessons': 24,
+                'projects': 4,
+                'category': 'Programming',
+                'color': 'from-green-600 to-green-800',
+                'instructor': 'Mr. Vincent',
+                'rating': 4.7,
+                'price': 54.99,
+                'resources': 18,
+                'quizzes': 6,
+                'modules': [
+                    {'title': 'Django Fundamentals & Setup', 'lessons': 4, 'duration': '1 week', 'order': 1},
+                    {'title': 'Models & Database Design', 'lessons': 5, 'duration': '1.5 weeks', 'order': 2},
+                    {'title': 'Views & URL Routing', 'lessons': 4, 'duration': '1 week', 'order': 3},
+                    {'title': 'Templates & Frontend Integration', 'lessons': 4, 'duration': '1 week', 'order': 4},
+                    {'title': 'Forms & User Input', 'lessons': 3, 'duration': '1 week', 'order': 5},
+                    {'title': 'Authentication & Deployment', 'lessons': 4, 'duration': '1.5 weeks', 'order': 6}
+                ]
+            },
+            {
+                'title': 'Python for Data Science',
+                'description': 'Data analysis, visualization, and machine learning with Python',
+                'long_description': 'Learn to analyze data, create visualizations, and build machine learning models using Python. Master libraries like Pandas, NumPy, Matplotlib, and Scikit-learn to extract insights from data and make data-driven decisions.',
+                'icon': 'fa-chart-line',
+                'level': 'Intermediate',
+                'duration': '7 weeks',
+                'lessons': 28,
+                'projects': 5,
+                'category': 'Data Science',
+                'color': 'from-purple-500 to-pink-500',
+                'instructor': 'Mr. Vincent',
+                'rating': 4.8,
+                'price': 64.99,
+                'resources': 22,
+                'quizzes': 7,
+                'modules': [
+                    {'title': 'Python for Data Analysis', 'lessons': 5, 'duration': '1.5 weeks', 'order': 1},
+                    {'title': 'Pandas & Data Manipulation', 'lessons': 6, 'duration': '1.5 weeks', 'order': 2},
+                    {'title': 'Data Visualization', 'lessons': 5, 'duration': '1.5 weeks', 'order': 3},
+                    {'title': 'Statistical Analysis', 'lessons': 4, 'duration': '1 week', 'order': 4},
+                    {'title': 'Machine Learning Fundamentals', 'lessons': 5, 'duration': '1.5 weeks', 'order': 5},
+                    {'title': 'Real-world Data Projects', 'lessons': 3, 'duration': '1 week', 'order': 6}
+                ]
+            },
+            {
+                'title': 'Automation with Python',
+                'description': 'Automate tasks and workflows using Python scripting',
+                'long_description': 'Learn to automate repetitive tasks, file operations, web scraping, and system administration using Python. Save time and increase productivity with powerful automation scripts that handle boring tasks for you.',
+                'icon': 'fa-robot',
+                'level': 'Beginner to Intermediate',
+                'duration': '4 weeks',
+                'lessons': 16,
+                'projects': 4,
+                'category': 'Programming',
+                'color': 'from-orange-500 to-red-500',
+                'instructor': 'Mr. Lyxin',
+                'rating': 4.5,
+                'price': 44.99,
+                'resources': 14,
+                'quizzes': 4,
+                'modules': [
+                    {'title': 'Python Scripting Basics', 'lessons': 4, 'duration': '1 week', 'order': 1},
+                    {'title': 'File & System Automation', 'lessons': 4, 'duration': '1 week', 'order': 2},
+                    {'title': 'Web Automation & Scraping', 'lessons': 4, 'duration': '1 week', 'order': 3},
+                    {'title': 'API Automation & Integration', 'lessons': 4, 'duration': '1 week', 'order': 4}
+                ]
+            }
+        ]
+
+        courses_added = 0
+        modules_added = 0
+
+        for course_data in sample_courses:
+            # Check if course already exists
+            existing_course = Course.query.filter_by(title=course_data['title']).first()
+            if not existing_course:
+                # Extract modules before creating course
+                modules = course_data.pop('modules', [])
+                
+                # Create course
+                course = Course(**course_data)
+                db.session.add(course)
+                db.session.flush()  # To get the course ID
+                courses_added += 1
+                
+                # Add modules for this course
+                for module_data in modules:
+                    module = CourseModule(course_id=course.id, **module_data)
+                    db.session.add(module)
+                    modules_added += 1
+        
+        db.session.commit()
+        
+        flash(f"Successfully added {courses_added} courses and {modules_added} modules to the database!", "success")
+        
+        # Log the action
+        print(f"Admin {current_user.username} seeded {courses_added} courses with {modules_added} modules")
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error seeding courses: {str(e)}", "error")
+        print(f"Error in seed_courses route: {e}")
     
-    course_title = course_details.get(course_id, {}).get('title', 'the course')
-    flash(f"Successfully enrolled in {course_title}!", "success")
-    return redirect(url_for('course_detail', course_id=course_id))
+    return redirect(url_for('admin_panel'))
+
+#--------------------------------------------------------------------
+# Admin Route to Clear All Courses (Dangerous - for development only)
+@app.route("/admin/clear-courses")
+@login_required
+@admin_required
+def clear_courses():
+    try:
+        # Get counts before deletion
+        course_count = Course.query.count()
+        module_count = CourseModule.query.count()
+        enrollment_count = Enrollment.query.count()
+        progress_count = UserProgress.query.count()
+        
+        # Delete in correct order to maintain referential integrity
+        UserProgress.query.delete()
+        Enrollment.query.delete()
+        CourseModule.query.delete()
+        Course.query.delete()
+        
+        db.session.commit()
+        
+        flash(f"Cleared {course_count} courses, {module_count} modules, {enrollment_count} enrollments, and {progress_count} progress records.", "warning")
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error clearing courses: {str(e)}", "error")
+    
+    return redirect(url_for('admin_panel'))
+
+#--------------------------------------------------------------------
+# Admin Route to View Course Statistics
+@app.route("/admin/course-stats")
+@login_required
+@admin_required
+def course_stats():
+    try:
+        stats = {
+            'total_courses': Course.query.count(),
+            'active_courses': Course.query.filter_by(is_active=True).count(),
+            'total_modules': CourseModule.query.count(),
+            'total_enrollments': Enrollment.query.count(),
+            'active_enrollments': Enrollment.query.filter_by(is_active=True).count(),
+            'completed_enrollments': Enrollment.query.filter(Enrollment.completed_at.isnot(None)).count(),
+            'total_progress_records': UserProgress.query.count(),
+            'courses_by_category': db.session.query(
+                Course.category, 
+                db.func.count(Course.id)
+            ).group_by(Course.category).all(),
+            'popular_courses': db.session.query(
+                Course.title,
+                db.func.count(Enrollment.id)
+            ).join(Enrollment).group_by(Course.title).order_by(db.func.count(Enrollment.id).desc()).limit(5).all()
+        }
+        
+        return render_template("admin_course_stats.html", stats=stats)
+        
+    except Exception as e:
+        flash(f"Error loading course statistics: {str(e)}", "error")
+        return redirect(url_for('admin_panel'))
 #--------------------------------------------------------------------
 @app.route("/admin")
 @login_required
