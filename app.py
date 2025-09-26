@@ -222,22 +222,24 @@ def upload_file():
         base, ext = os.path.splitext(filename)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         unique_filename = f"{base}_{timestamp}{ext}"
-        filepath = os.path.join(app.config['STATIC_FOLDER'], unique_filename)
-        
-        file.save(filepath)
-        
-        file_type = 'pdf' if ext.lower() == '.pdf' else 'image'
-        
+        ext = ext.lower()
+        if ext == '.pdf':
+            save_folder = app.config['STATIC_FOLDER']
+            file_type = 'pdf'
+        else:
+            save_folder = app.config['UPLOAD_FOLDER']
+            file_type = 'image'
+        file.save(os.path.join(save_folder, unique_filename))
+        # Store only the filename, not the full path
         new_file = File(
-            filename=filename,
-            filepath=filepath,
+            filename=unique_filename,
+            filepath=unique_filename,
             file_type=file_type,
             description=description,
             uploader_id=current_user.id
         )
         db.session.add(new_file)
         db.session.commit()
-        
         return jsonify({'message': 'File uploaded successfully'}), 200
     else:
         return jsonify({'error': 'File type not allowed'}), 400
@@ -249,12 +251,17 @@ def upload_file():
 def download_file(file_id):
     security_answer = request.json.get('security_answer', '')
     
-    # Security check
+    # Security check - you can customize this
     if security_answer.lower() != 'lyxspace2025':
         return jsonify({'error': 'Security check failed'}), 403
     
     file_data = File.query.get_or_404(file_id)
-    return send_file(file_data.filepath, as_attachment=True, download_name=file_data.filename)
+    # Determine folder
+    if file_data.file_type == 'pdf':
+        folder = app.config['STATIC_FOLDER']
+    else:
+        folder = app.config['UPLOAD_FOLDER']
+    return send_file(os.path.join(folder, file_data.filepath), as_attachment=True, download_name=file_data.filename)
 
 #--------------------------------------------------------------------
 @app.route("/api/file/<int:file_id>")
@@ -262,7 +269,11 @@ def download_file(file_id):
 @protect_file
 def get_file(file_id):
     file_data = File.query.get_or_404(file_id)
-    return send_file(file_data.filepath)
+    if file_data.file_type == 'pdf':
+        folder = app.config['STATIC_FOLDER']
+    else:
+        folder = app.config['UPLOAD_FOLDER']
+    return send_file(os.path.join(folder, file_data.filepath))
 
 #--------------------------------------------------------------------
 @app.route("/admin")
@@ -303,8 +314,14 @@ def delete_file(file_id):
     file_data = File.query.get_or_404(file_id)
     
     # Delete physical file
-    if os.path.exists(file_data.filepath):
-        os.remove(file_data.filepath)
+    # Remove from correct folder
+    if file_data.file_type == 'pdf':
+        folder = app.config['STATIC_FOLDER']
+    else:
+        folder = app.config['UPLOAD_FOLDER']
+    file_path = os.path.join(folder, file_data.filepath)
+    if os.path.exists(file_path):
+        os.remove(file_path)
     
     db.session.delete(file_data)
     db.session.commit()
