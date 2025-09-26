@@ -801,8 +801,9 @@
                                 {% if module.lessons > 3 %}
                                 <div class="lesson-item bg-gradient-to-r from-blue-500/20 to-purple-500/20">
                                     <div class="flex items-center">
-                                        <i class="fas fa-book-open text-purple-400 mr-3"></i>
-                                        <span>Extra lessons available</span>
+                                    <div class="stat-item">
+                                        <div class="stat-value text-yellow-400">{{ course.modules|length }}</div>
+                                        <div class="stat-label">Learning Modules</div>
                                     </div>
                                     <span class="lesson-duration">30 min</span>
                                 </div>
@@ -877,7 +878,7 @@
                             </div>
                             <span class="text-sm text-gray-400">2 weeks ago</span>
                         </div>
-                        <p class="text-gray-300">This course completely transformed my understanding of {{ course.title.split(' ')[0] }}. The instructor explains complex concepts in a way that's easy to understand.</p>
+                        <p class="text-gray-300">This course completely transformed my understanding of {% set first_word = course.title.split(' ')[0] if ' ' in course.title else course.title %}{{ first_word }}. The instructor explains complex concepts in a way that's easy to understand.</p>
                     </div>
                     
                     <div class="review-item">

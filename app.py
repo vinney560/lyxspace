@@ -446,8 +446,8 @@ def course_detail(course_id):
                     'id': module.id
                 } for module in modules
             ] if modules else [],
-            'resources': course.resources,
-            'quizzes': course.quizzes,
+            'resources': course.resources if isinstance(course.resources, list) else [],
+            'quizzes': course.quizzes if isinstance(course.quizzes, list) else [],
             'is_enrolled': enrollment is not None,
             'progress': enrollment.progress if enrollment else 0.0
         }
