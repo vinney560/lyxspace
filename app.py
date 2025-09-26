@@ -276,7 +276,6 @@ def get_file(file_id):
         folder = app.config['UPLOAD_FOLDER']
     return send_file(os.path.join(folder, file_data.filepath))
 #--------------------------------------------------------------------
-#--------------------------------------------------------------------
 # Courses Route
 @app.route("/courses")
 @login_required
@@ -369,6 +368,7 @@ def course_detail(course_id):
     # Sample course detail - in production, this would come from a database
     course_details = {
         1: {
+            'id': 1,
             'title': 'Ubuntu & Linux Mastery',
             'description': 'Complete guide to Linux command line, system administration, and shell scripting',
             'long_description': 'This comprehensive course takes you from Linux beginner to proficient system administrator. You\'ll learn essential command line skills, file system management, user administration, networking, security, and automation with shell scripting.',
@@ -395,6 +395,7 @@ def course_detail(course_id):
             'quizzes': 6
         },
         2: {
+            'id': 2,
             'title': 'HTML5 & CSS3 Fundamentals',
             'description': 'Build modern, responsive websites with latest HTML5 and CSS3 features',
             'long_description': 'Start your web development journey with this comprehensive HTML5 and CSS3 course. Learn semantic HTML, CSS layouts, responsive design, animations, and modern web development practices.',
@@ -418,6 +419,113 @@ def course_detail(course_id):
             ],
             'resources': 12,
             'quizzes': 4
+        },
+        3: {
+            'id': 3,
+            'title': 'JavaScript Programming',
+            'description': 'Master JavaScript from basics to advanced concepts and modern frameworks',
+            'long_description': 'Dive deep into JavaScript programming with this comprehensive course. Learn everything from basic syntax to advanced concepts like closures, promises, async/await, and modern frameworks.',
+            'icon': 'fa-js-square',
+            'level': 'Intermediate',
+            'duration': '8 weeks',
+            'lessons': 32,
+            'projects': 6,
+            'category': 'Web Development',
+            'color': 'from-yellow-500 to-amber-600',
+            'instructor': 'Mike Chen',
+            'rating': 4.7,
+            'students': 2100,
+            'price': '$59.99',
+            'modules': [
+                {'title': 'JavaScript Basics', 'lessons': 6, 'duration': '1.5 weeks'},
+                {'title': 'DOM Manipulation', 'lessons': 5, 'duration': '1.5 weeks'},
+                {'title': 'Advanced JavaScript', 'lessons': 6, 'duration': '2 weeks'},
+                {'title': 'Async Programming', 'lessons': 4, 'duration': '1 week'},
+                {'title': 'Modern Frameworks', 'lessons': 5, 'duration': '1.5 weeks'},
+                {'title': 'Project Development', 'lessons': 6, 'duration': '1.5 weeks'}
+            ],
+            'resources': 20,
+            'quizzes': 8
+        },
+        4: {
+            'id': 4,
+            'title': 'Python Development',
+            'description': 'Learn Python programming, web development with Django/Flask, and data science',
+            'long_description': 'Become a Python expert with this all-in-one course covering programming fundamentals, web development, data analysis, and automation. Perfect for beginners and those looking to advance their skills.',
+            'icon': 'fa-python',
+            'level': 'Beginner to Advanced',
+            'duration': '10 weeks',
+            'lessons': 40,
+            'projects': 8,
+            'category': 'Programming',
+            'color': 'from-blue-500 to-cyan-500',
+            'instructor': 'Dr. Emily Watson',
+            'rating': 4.9,
+            'students': 3500,
+            'price': '$69.99',
+            'modules': [
+                {'title': 'Python Fundamentals', 'lessons': 8, 'duration': '2 weeks'},
+                {'title': 'Data Structures', 'lessons': 6, 'duration': '1.5 weeks'},
+                {'title': 'Web Development', 'lessons': 7, 'duration': '2 weeks'},
+                {'title': 'Data Science', 'lessons': 6, 'duration': '1.5 weeks'},
+                {'title': 'Automation & Scripting', 'lessons': 5, 'duration': '1.5 weeks'},
+                {'title': 'Advanced Topics', 'lessons': 4, 'duration': '1 week'},
+                {'title': 'Capstone Project', 'lessons': 4, 'duration': '1.5 weeks'}
+            ],
+            'resources': 25,
+            'quizzes': 10
+        },
+        5: {
+            'id': 5,
+            'title': 'Linux Server Administration',
+            'description': 'Advanced Linux server management, security, and deployment strategies',
+            'long_description': 'Master Linux server administration with this advanced course. Learn about system services, security hardening, performance tuning, containerization, and enterprise deployment strategies.',
+            'icon': 'fa-server',
+            'level': 'Advanced',
+            'duration': '5 weeks',
+            'lessons': 20,
+            'projects': 4,
+            'category': 'System Administration',
+            'color': 'from-purple-500 to-pink-500',
+            'instructor': 'Raj Patel',
+            'rating': 4.8,
+            'students': 980,
+            'price': '$79.99',
+            'modules': [
+                {'title': 'Server Setup & Configuration', 'lessons': 4, 'duration': '1 week'},
+                {'title': 'Service Management', 'lessons': 4, 'duration': '1 week'},
+                {'title': 'Security Hardening', 'lessons': 4, 'duration': '1 week'},
+                {'title': 'Performance Tuning', 'lessons': 3, 'duration': '1 week'},
+                {'title': 'Containerization & DevOps', 'lessons': 3, 'duration': '1 week'},
+                {'title': 'Enterprise Deployment', 'lessons': 2, 'duration': '1 week'}
+            ],
+            'resources': 18,
+            'quizzes': 5
+        },
+        6: {
+            'id': 6,
+            'title': 'Responsive Web Design',
+            'description': 'Create mobile-first, responsive designs with CSS Grid, Flexbox, and frameworks',
+            'long_description': 'Learn to create beautiful, responsive websites that work perfectly on all devices. Master CSS Grid, Flexbox, media queries, and modern design frameworks to build professional-grade web interfaces.',
+            'icon': 'fa-laptop-code',
+            'level': 'Intermediate',
+            'duration': '3 weeks',
+            'lessons': 12,
+            'projects': 3,
+            'category': 'Web Development',
+            'color': 'from-pink-500 to-rose-500',
+            'instructor': 'Lisa Thompson',
+            'rating': 4.5,
+            'students': 1200,
+            'price': '$34.99',
+            'modules': [
+                {'title': 'CSS Grid Mastery', 'lessons': 3, 'duration': '1 week'},
+                {'title': 'Flexbox Techniques', 'lessons': 3, 'duration': '1 week'},
+                {'title': 'Responsive Frameworks', 'lessons': 3, 'duration': '1 week'},
+                {'title': 'Advanced Layouts', 'lessons': 3, 'duration': '1 week'}
+            ],
+            'resources': 10,
+            'quizzes': 3
         }
     }
     
@@ -434,7 +542,18 @@ def course_detail(course_id):
 @login_required
 def enroll_course(course_id):
     # In production, this would add the user to the course in the database
-    flash(f"Successfully enrolled in the course!", "success")
+    # Get course title for the flash message
+    course_details = {
+        1: {'title': 'Ubuntu & Linux Mastery'},
+        2: {'title': 'HTML5 & CSS3 Fundamentals'},
+        3: {'title': 'JavaScript Programming'},
+        4: {'title': 'Python Development'},
+        5: {'title': 'Linux Server Administration'},
+        6: {'title': 'Responsive Web Design'}
+    }
+    
+    course_title = course_details.get(course_id, {}).get('title', 'the course')
+    flash(f"Successfully enrolled in {course_title}!", "success")
     return redirect(url_for('course_detail', course_id=course_id))
 #--------------------------------------------------------------------
 @app.route("/admin")
