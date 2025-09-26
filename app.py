@@ -189,7 +189,7 @@ def files():
 #--------------------------------------------------------------------
 @app.route("/api/files")
 @login_required
-#@protect_file
+@protect_file
 def api_files():
     files = File.query.order_by(File.upload_date.desc()).all()
     file_list = []
@@ -245,11 +245,11 @@ def upload_file():
 #--------------------------------------------------------------------
 @app.route("/api/download/<int:file_id>", methods=['POST'])
 @login_required
-#@protect_file
+@protect_file
 def download_file(file_id):
     security_answer = request.json.get('security_answer', '')
     
-    # Security check - you can customize this
+    # Security check
     if security_answer.lower() != 'lyxspace2025':
         return jsonify({'error': 'Security check failed'}), 403
     
@@ -259,7 +259,7 @@ def download_file(file_id):
 #--------------------------------------------------------------------
 @app.route("/api/file/<int:file_id>")
 @login_required
-#@protect_file
+@protect_file
 def get_file(file_id):
     file_data = File.query.get_or_404(file_id)
     return send_file(file_data.filepath)
@@ -267,7 +267,7 @@ def get_file(file_id):
 #--------------------------------------------------------------------
 @app.route("/admin")
 @login_required
-#@admin_required
+@admin_required
 def admin_panel():
     users = User.query.filter(User.id != 1).all()  # Exclude admin
     files = File.query.all()
@@ -276,7 +276,7 @@ def admin_panel():
 #--------------------------------------------------------------------
 @app.route("/admin/allow_user/<int:user_id>", methods=['POST'])
 @login_required
-#@admin_required
+@admin_required
 def allow_user(user_id):
     user = User.query.get_or_404(user_id)
     user.allowed = "yes"
@@ -287,7 +287,7 @@ def allow_user(user_id):
 #--------------------------------------------------------------------
 @app.route("/admin/revoke_user/<int:user_id>", methods=['POST'])
 @login_required
-#@admin_required
+@admin_required
 def revoke_user(user_id):
     user = User.query.get_or_404(user_id)
     user.allowed = "no"
