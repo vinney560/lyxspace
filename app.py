@@ -436,7 +436,7 @@ def course_detail(course_id):
             'color': course.color,
             'instructor': course.instructor,
             'rating': course.rating,
-            'students': enrollment_count,  # Use actual enrollment count
+            'students': int(enrollment_count) if enrollment_count is not None else 0,
             'price': f"${course.price:.2f}" if course.price > 0 else "Free",
             'modules': [
                 {
@@ -445,7 +445,7 @@ def course_detail(course_id):
                     'duration': module.duration,
                     'id': module.id
                 } for module in modules
-            ],
+            ] if modules else [],
             'resources': course.resources,
             'quizzes': course.quizzes,
             'is_enrolled': enrollment is not None,
