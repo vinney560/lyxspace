@@ -431,8 +431,8 @@ def course_detail(course_id):
             'students': int(enrollment_count) if enrollment_count is not None else 0,
             'price': f"${course.price:.2f}" if course.price > 0 else "Free",
 
-            # ✅ modules stays a list
-            'modules': [
+            # ✅ Use a new key name to avoid conflict with DB field
+            'module_list': [
                 {
                     'title': module.title,
                     'lessons': module.lessons,
@@ -441,10 +441,11 @@ def course_detail(course_id):
                 } for module in modules
             ] if modules else [],
 
-            # ✅ Keep these as integers
+            # ✅ These are integers (counts), keep them as such
             'resources': course.resources or 0,
             'quizzes': course.quizzes or 0,
 
+            # ✅ Enrollment details
             'is_enrolled': enrollment is not None,
             'progress': enrollment.progress if enrollment else 0.0
         }
