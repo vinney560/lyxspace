@@ -794,6 +794,21 @@ def update_progress(course_id):
         return jsonify({'error': 'Failed to update progress'}), 500
 
 #--------------------------------------------------------------------
+# Route to update course progress when visited
+@app.route("/course/<int:course_id>/visit", methods=["GET"])
+@login_required
+def visit_course(course_id):
+    # Mark course as visited by updating progress
+    enrollment = Enrollment.query.filter_by(user_id=current_user.id, course_id=course_id, is_active=True).first()
+    course = Course.query.get(course_id)
+    if enrollment:
+        # Increment progress by 10 (max 100)
+        enrollment.progress = min(enrollment.progress + 10.00, 100.0)
+        db.session.commit()
+        progress = enrollment.progress
+    else:
+        progress = 0.0
+    return render_template("progress_course.html", course=course, progress=progress)
 #--------------------------------------------------------------------
 # Admin Route to Add Comprehensive Sample Courses
 @app.route("/admin/seed-courses")

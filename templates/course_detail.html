@@ -700,7 +700,7 @@
                             </div>
                         </div>
                         <div class="flex space-x-2">
-                            <a href="#" class="btn btn-success">
+                            <a href="{{ url_for('visit_course', course_id=course.id) }}" class="btn btn-success">
                                 <i class="fas fa-play mr-2"></i> Continue Learning
                             </a>
                             <form action="{{ url_for('unenroll_course', course_id=course.id) }}" method="POST" class="inline">

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Progress | LyxSpace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #F9FAFB;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6, #EC4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            background-size: 200% auto;
+            animation: gradientShift 3s ease infinite;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+            100% { background-position: 0% center; }
+        }
+        .glass-morph {
+            background: rgba(30, 30, 40, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 31, 135, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 500px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+            border-radius: 12px;
+            transition: width 0.7s cubic-bezier(.4,0,.2,1);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            font-weight: bold;
+            color: #fff;
+            padding-right: 1rem;
+        }
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #8B5CF6;
+        }
+        .btn {
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            cursor: pointer;
+            margin-top: 2rem;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-morph text-center animate__animated animate__fadeIn">
+        <div class="icon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <h1 class="gradient-text text-2xl font-bold mb-2">Course Progress</h1>
+        <h2 class="text-lg font-semibold mb-4">{{ course.title }}</h2>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ progress }}%">
+                {{ progress|round|int }}%
+            </div>
+        </div>
+        <p class="text-gray-300 mb-4">Keep going! Every visit increases your progress. When you reach 100%, you'll unlock your certificate and bonus resources.</p>
+        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Course
+        </a>
+    </div>
+</body>
+</html>
