@@ -679,7 +679,7 @@
                     <div class="stat-label">Coding Exercises</div>
                 </div>
                         <div class="stat-item">
-                            <div class="stat-value text-yellow-400">{{ course.module_list|length }}</div>
+                            <div class="stat-value text-yellow-400">{{ course.module_list | length if course.module_list is iterable else 0 }}</div>
                             <div class="stat-label">Learning Modules</div>
                         </div>
             </div>
@@ -775,7 +775,7 @@
                                     <p class="text-sm text-gray-400">{{ module.lessons }} lessons • {{ module.duration }}</p>
                                     {% if course.is_enrolled %}
                                     <div class="progress-bar mt-2">
-                                        <div class="progress-fill" style="width: {{ (loop.index0 * 20 + 10)|random }}%"></div>
+                                        <div class="progress-fill" style="width: {{ [loop.index0 * 20, loop.index0 * 25, loop.index0 * 30]|random }}%"></div>
                                     </div>
                                     {% endif %}
                                 </div>
@@ -788,7 +788,7 @@
                             
                             {% if course.is_enrolled %}
                             <div class="lesson-list mt-3">
-                                {% for i in range(module.lessons) %}
+                                {% for i in range(module.lessons or 0) %}
                                 <div class="lesson-item">
                                     <div class="flex items-center">
                                         <i class="fas fa-play-circle text-blue-400 mr-3"></i>
@@ -797,12 +797,12 @@
                                     <span class="lesson-duration">15 min</span>
                                 </div>
                                 {% endfor %}
-                                
-                                {% if module.lessons > 3 %}
+
+                                {% if (module.lessons or 0) > 3 %}
                                 <div class="lesson-item bg-gradient-to-r from-blue-500/20 to-purple-500/20">
                                     <div class="flex items-center">
                                     <div class="stat-item">
-                                        <div class="stat-value text-yellow-400">{{ course.module_list|length }}</div>
+                                        <div class="stat-value text-yellow-400">{{ course.module_list | length if course.module_list is iterable else 0 }}</div>
                                         <div class="stat-label">Learning Modules</div>
                                     </div>
                                     <span class="lesson-duration">30 min</span>

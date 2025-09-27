@@ -1,4 +1,5 @@
 import os
+import traceback
 from flask import Flask, render_template, url_for, flash, redirect, send_from_directory, session, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_required, current_user, logout_user, login_user, LoginManager, UserMixin
@@ -449,12 +450,17 @@ def course_detail(course_id):
             'is_enrolled': enrollment is not None,
             'progress': enrollment.progress if enrollment else 0.0
         }
-        
+        import pprint
+        print("\n=== DEBUG: course_data ===")
+        pprint.pprint(course_data)
+        print("=== END DEBUG ===\n")
+
         return render_template("course_detail.html", course=course_data)
-        
+
     except Exception as e:
         flash("Course not found or error loading course details.", "error")
         print(f"Error in course_detail route: {e}")
+        traceback.print_exc()
         return redirect(url_for('courses'))
 
 #--------------------------------------------------------------------
@@ -1174,4 +1180,5 @@ with app.app_context():
         db.session.commit()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.debug=True
+    app.run()
