@@ -810,6 +810,30 @@ def visit_course(course_id):
         enrollment.progress = min(enrollment.progress + 10.00, 100.0)
         db.session.commit()
         progress = enrollment.progress
+
+        # Update or create UserProgress record for visit
+        user_progress = UserProgress.query.filter_by(
+            user_id=current_user.id,
+            course_id=course_id,
+            module_id=None,
+            lesson_id=None
+        ).first()
+        if user_progress:
+            user_progress.completed = True
+            user_progress.completed_at = datetime.utcnow()
+            user_progress.last_accessed = datetime.utcnow()
+        else:
+            user_progress = UserProgress(
+                user_id=current_user.id,
+                course_id=course_id,
+                module_id=None,
+                lesson_id=None,
+                completed=True,
+                completed_at=datetime.utcnow(),
+                last_accessed=datetime.utcnow()
+            )
+            db.session.add(user_progress)
+        db.session.commit()
     else:
         progress = 0.0
     return render_template("progress_course.html", course=course, progress=progress)
@@ -1250,8 +1274,8 @@ def course_stats():
 @admin_required
 def admin_stats():
     users = User.query.all()
-    files = File.query.all()
-    filestores = FileStore.query.all()
+    files = FileStore.query.filter_by(file_type="image")
+    filestores = FileStore.query.filter(FileStore.file_type != "image")
     courses = Course.query.all()
     modules = CourseModule.query.all()
     enrollments = Enrollment.query.all()

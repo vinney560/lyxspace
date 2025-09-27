@@ -63,7 +63,7 @@
             </tbody></table>
         </div>
         <div class="section">
-            <h2><i class="fas fa-file-pdf mr-2"></i>Files (PDFs)</h2>
+            <h2><i class="fas fa-file-pdf mr-2"></i>Files (PDFs & Codes)</h2>
             <table><thead><tr><th>ID</th><th>Filename</th><th>Upload Date</th><th>Description</th><th>Uploader</th></tr></thead><tbody>
                 {% for f in filestores %}
                 <tr><td>{{ f.id }}</td><td>{{ f.filename }}</td><td>{{ f.upload_date.strftime('%Y-%m-%d %H:%M') }}</td><td>{{ f.description or 'N/A' }}</td><td>{{ f.uploader_id }}</td></tr>
@@ -90,7 +90,7 @@
             <h2><i class="fas fa-user-graduate mr-2"></i>Enrollments</h2>
             <table><thead><tr><th>ID</th><th>User</th><th>Course</th><th>Enrolled At</th><th>Completed</th><th>Progress</th></tr></thead><tbody>
                 {% for e in enrollments %}
-                <tr><td>{{ e.id }}</td><td>{{ e.user_id }}</td><td>{{ e.course_id }}</td><td>{{ e.enrolled_at.strftime('%Y-%m-%d') }}</td><td>{% if e.completed_at %}{{ e.completed_at.strftime('%Y-%m-%d') }}{% else %}No{% endif %}</td><td>{{ (e.progress * 100)|round(1) }}%</td></tr>
+                <tr><td>{{ e.id }}</td><td>{{ e.user_id }}</td><td>{{ e.course_id }}</td><td>{{ e.enrolled_at.strftime('%Y-%m-%d') }}</td><td>{% if e.completed_at %}{{ e.completed_at.strftime('%Y-%m-%d') }}{% else %}No{% endif %}</td><td>{{ (e.progress|round(1)) }}%</td></tr>
                 {% endfor %}
             </tbody></table>
         </div>
