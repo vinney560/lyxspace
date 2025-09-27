@@ -309,6 +309,9 @@ def files():
     if current_user.is_allowed:
         files_list = File.query.order_by(File.upload_date.desc()).all()
         pdf_list = FileStore.query.order_by(FileStore.upload_date.desc()).all()
+        print(f"[DEBUG] Found {len(pdf_list)} PDFs in FileStore for user {current_user.id}")
+    else:
+        print(f"[DEBUG] User {current_user.id} not allowed. No files or PDFs shown.")
     return render_template("files.html", files=files_list, pdfs=pdf_list, user_allowed=current_user.is_allowed)
 
 #--------------------------------------------------------------------
@@ -423,12 +426,18 @@ def download_file(file_id):
 @login_required
 @protect_file
 def get_file(file_id):
+    # Try FileStore first (PDF)
+    pdf_data = FileStore.query.get(file_id)
+    if pdf_data:
+        from io import BytesIO
+        return send_file(
+            BytesIO(pdf_data.data),
+            download_name=pdf_data.filename,
+            mimetype='application/pdf'
+        )
+    # Fallback to File DB (image)
     file_data = File.query.get_or_404(file_id)
-    if file_data.file_type == 'pdf':
-        folder = app.config['PDF_FOLDER']
-    else:
-        folder = app.config['UPLOAD_FOLDER']
-    return send_file(os.path.join(file_data.filepath))
+    return send_file(file_data.filepath)
 #--------------------------------------------------------------------
 # Courses Route
 @app.route("/courses")
