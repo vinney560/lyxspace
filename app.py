@@ -345,7 +345,7 @@ def upload_file():
             print(f"✅ Image uploaded to DB: {unique_filename}")
             return jsonify({'message': 'Image uploaded successfully', 'file_id': new_file.id}), 200
 
-        elif ext.lower().replace('.', '') in {'py', 'html', 'js', 'java', 'json'}:
+        elif ext.lower().replace('.', '') in {'py', 'html', 'js', 'java', 'json', 'css'}:
             new_file = FileStore(
                 filename=unique_filename,
                 data=file_data,

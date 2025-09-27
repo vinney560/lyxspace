@@ -733,8 +733,13 @@
                         <div class="file-card animate__animated animate__fadeIn">
                             <div class="file-preview">
                                 <div class="pdf-preview">
-                                    <i class="fas fa-code"></i>
-                                    <span class="text-sm sm:text-base">Code File</span>
+                                    {% if code.filename.split(".")[-1] == "py" %}
+                                        <i class="fas fa-python"></i>
+                                        <span class="text-sm sm:text-base">Python</span>
+                                    {% else %}
+                                        <i class="fas fa-code"></i>
+                                        <span class="text-sm sm:text-base">Code File</span>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="p-4 flex flex-col flex-grow">
