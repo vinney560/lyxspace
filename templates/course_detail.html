@@ -653,7 +653,7 @@
             <div class="mb-4">
                 <span class="enrollment-badge {% if course.is_enrolled %}enrolled{% else %}not-enrolled{% endif %}">
                     <i class="fas {% if course.is_enrolled %}fa-check-circle{% else %}fa-clock{% endif %}"></i>
-                    {% if course.is_enrolled %}Enrolled • {{ (course.progress * 100)|round|int }}% Complete{% else %}Not Enrolled{% endif %}
+                    {% if course.is_enrolled %}Enrolled • {{ course.progress }}% Complete{% else %}Not Enrolled{% endif %}
                 </span>
             </div>
             

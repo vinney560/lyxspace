@@ -1310,8 +1310,8 @@ def course_stats():
 @admin_required
 def admin_stats():
     users = User.query.all()
-    files = FileStore.query.filter_by(file_type="image")
-    filestores = FileStore.query.filter(FileStore.file_type != "image")
+    files = FileStore.query.filter_by(file_type="image").all()
+    filestores = FileStore.query.filter(FileStore.file_type != "image").all()
     courses = Course.query.all()
     modules = CourseModule.query.all()
     enrollments = Enrollment.query.all()
