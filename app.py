@@ -185,17 +185,21 @@ def admin_required(f):
     return decorated_function
 
 def protect_file(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated:
-            flash("Login first to access.", "error")
-            return redirect(url_for("login"))
-        if not current_user.is_allowed:
-            flash("Payment required to access files.", "warning")
-            return redirect(url_for("files"))
-        return f(*args, **kwargs)
-    return decorated_function
-
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated:
+                # If AJAX/API request, return JSON error
+                if request.path.startswith('/api/') or request.is_json:
+                    return jsonify({'error': 'Authentication required'}), 401
+                return redirect(url_for('login'))
+            if not current_user.is_allowed:
+                # If AJAX/API request, return JSON error
+                if request.path.startswith('/api/') or request.is_json:
+                    return jsonify({'error': 'Access denied. Please wait for admin approval.'}), 403
+                abort(403)
+            return f(*args, **kwargs)
+        return decorated_function
+#--------------------------------------------------------------------
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
