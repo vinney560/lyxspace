@@ -883,7 +883,7 @@
             
             // Show welcome toast for non-admin users
             if (!isAdmin && {{ 'true' if current_user.is_allowed else 'false' }}) {
-                showToast('Welcome! You can view and download files.', 'info', 4000);
+                showToast('Welcome! You can view and download files.', 'info', 5000);
             }
             
             // Event listeners
@@ -932,10 +932,10 @@
                 
                 if (countdown <= 0) {
                     clearInterval(countdownInterval);
-                    showToast('Refreshing page to check access status...', 'info', 2000);
+                    showToast('Refreshing page to check access status...', 'info', 5000);
                     setTimeout(() => {
                         location.reload();
-                    }, 2000);
+                    }, 5000);
                 }
             }, 1000);
             
@@ -986,7 +986,7 @@
                     if (toast.parentElement) {
                         toast.parentElement.removeChild(toast);
                     }
-                }, 4000);
+                }, 5000);
             }, duration);
         }
 
@@ -1033,7 +1033,7 @@
             currentFileId = fileId;
             const modalBody = document.getElementById('modalBody');
             
-            showToast('Loading file preview...', 'info', 2000);
+            showToast('Loading file preview...', 'info', 5000);
             
 
             if (fileType === 'pdf') {
@@ -1090,7 +1090,7 @@
             // Focus on the input for better accessibility
             setTimeout(() => {
                 document.getElementById('securityAnswer').focus();
-            }, 100);
+            }, 300);
         }
 
         // Close security modal
