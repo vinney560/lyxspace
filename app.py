@@ -191,7 +191,29 @@ def protect_file(f):
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
+#--------------------------------------------------------------------
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        next_page = request.args.get("next")
+        return redirect(next_page or url_for("home"))
+    if request.method == "POST":
+        mobile = request.form.get("mobile")
+        username = request.form.get("username", "")
+        next_page = request.args.get("next")
+        if not mobile or len(mobile) != 10 or not mobile.isdigit():
+            flash("Please enter a valid mobile number.", "error")
+            return render_template("login.html")
+        user = User.query.filter_by(mobile=mobile).first()
+        if not user:
+            user = User(mobile=mobile, username=username, allowed="no")
+            db.session.add(user)
+            db.session.commit()
+            flash("Registered successfully! Await admin approval for file access.", "success")
+        login_user(user)
+        flash("Logged in successfully.", "success")
+        return redirect(next_page or url_for("home"))
+    return render_template("login.html")
 #--------------------------------------------------------------------
 @app.route('/favicon.ico')
 def favicon():
@@ -301,9 +323,6 @@ def upload_file():
             return jsonify({'message': 'Image uploaded successfully', 'file_id': new_file.id}), 200
 
     return jsonify({'error': 'File type not allowed'}), 400
-def files():
-    # Duplicate function, replaced by improved version below. Remove this.
-    pass
 
 #--------------------------------------------------------------------
 
