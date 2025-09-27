@@ -45,14 +45,12 @@ ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 16MB max file size
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Static files folder
 STATIC_FOLDER = os.path.join(app.root_path, 'uploads')
 app.config['STATIC_FOLDER'] = STATIC_FOLDER
-if not os.path.exists(STATIC_FOLDER):
-    os.makedirs(STATIC_FOLDER)
+os.makedirs(STATIC_FOLDER, exist_ok=True)
 
 # -------------------- Folder Config --------------------
 BASE_UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
@@ -288,7 +286,7 @@ def upload_file():
             db.session.add(new_file)
             db.session.commit()
             print(f"✅ PDF uploaded to DB: {unique_filename}")
-            return
+            return jsonify({'message': 'PDF uploaded successfully', 'file_id': new_file.id}), 200
         elif ext.lower().replace('.', '') in {'png', 'jpg', 'jpeg', 'gif', 'webp'}:
             new_file = FileStore(
                 filename=unique_filename,
@@ -300,7 +298,7 @@ def upload_file():
             db.session.add(new_file)
             db.session.commit()
             print(f"✅ Image uploaded to DB: {unique_filename}")
-            return
+            return jsonify({'message': 'Image uploaded successfully', 'file_id': new_file.id}), 200
 
     return jsonify({'error': 'File type not allowed'}), 400
 def files():
@@ -321,57 +319,6 @@ def files():
     else:
         print(f"[DEBUG] User {current_user.id} not allowed. No files or PDFs shown.")
     return render_template("files.html", files=image_list, pdfs=pdf_list, user_allowed=current_user.is_allowed)
-
-# -------------------- UPLOAD ROUTE --------------------
-@app.route("/api/upload", methods=['POST'])
-@login_required
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-
-    file = request.files['file']
-    description = request.form.get('description', '')
-
-    if file.filename.strip() == '':
-        return jsonify({'error': 'No selected file'}), 400
-
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        base, ext = os.path.splitext(filename)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        unique_filename = f"{base}_{timestamp}{ext.lower()}"
-
-        if ext.lower() == '.pdf':
-                pdf_data = file.read()
-                new_pdf = FileStore(
-                    filename=unique_filename,
-                    data=pdf_data,
-                    description=description,
-                    uploader_id=current_user.id
-                )
-                db.session.add(new_pdf)
-                db.session.commit()
-                print(f"✅ PDF uploaded to DB: {unique_filename}")
-                return jsonify({'message': 'PDF uploaded successfully', 'file_id': new_pdf.id}), 200
-        else:
-            save_folder = app.config['IMAGE_FOLDER']
-            save_path = os.path.join(save_folder, unique_filename)
-            file.save(save_path)
-            # Save to File DB
-            new_file = File(
-                filename=unique_filename,
-                filepath=save_path,
-                file_type='image',
-                description=description,
-                uploader_id=current_user.id
-            )
-            db.session.add(new_file)
-            db.session.commit()
-            print(f"✅ Image uploaded: {save_path}")
-            return jsonify({'message': 'Image uploaded successfully', 'file_id': new_file.id}), 200
-
-    return jsonify({'error': 'File type not allowed'}), 400
-
 
 # -------------------- DOWNLOAD ROUTE --------------------
 @app.route("/api/download/<int:file_id>", methods=['POST'])
