@@ -734,8 +734,11 @@
                             <div class="file-preview">
                                 <div class="pdf-preview">
                                     {% if code.filename.split(".")[-1] == "py" %}
-                                        <i class="fas fa-python"></i>
+                                        <i class="fab fa-python"></i>
                                         <span class="text-sm sm:text-base">Python</span>
+                                    {% elif code.filename.split(".")[-1] == "html" %}
+                                        <i class="fab fa-html5"></i>
+                                        <span class="text-sm sm:text-base">HTML</span>
                                     {% else %}
                                         <i class="fas fa-code"></i>
                                         <span class="text-sm sm:text-base">Code File</span>
@@ -983,7 +986,7 @@
                     if (toast.parentElement) {
                         toast.parentElement.removeChild(toast);
                     }
-                }, 300);
+                }, 4000);
             }, duration);
         }
 
