@@ -196,7 +196,7 @@ def allowed_file(filename):
 def login():
     if current_user.is_authenticated:
         next_page = request.args.get("next")
-        return redirect(next_page or url_for("home"))
+        return redirect(next_page or url_for("files"))
     if request.method == "POST":
         mobile = request.form.get("mobile")
         username = request.form.get("username", "")
@@ -212,8 +212,23 @@ def login():
             flash("Registered successfully! Await admin approval for file access.", "success")
         login_user(user)
         flash("Logged in successfully.", "success")
-        return redirect(next_page or url_for("home"))
+        return redirect(next_page or url_for("files"))
     return render_template("login.html")
+#--------------------------------------------------------------------
+# Logout route: logs out user and deletes user from DB
+@app.route("/logout")
+@login_required
+def logout():
+    user_id = current_user.id
+    logout_user()
+    user = User.query.get(user_id)
+    if user and user_id != 1:  # Don't delete admin
+        db.session.delete(user)
+        db.session.commit()
+        flash("Your account has been deleted and you have been logged out.", "info")
+    else:
+        flash("Logged out.", "info")
+    return redirect(url_for("login"))
 #--------------------------------------------------------------------
 @app.route('/favicon.ico')
 def favicon():
@@ -1233,7 +1248,7 @@ def delete_file(file_id):
     return redirect(url_for('admin_panel'))
 #--------------------------------------------------------------------
 # Admin Route to Drop All Tables and Reset DB
-@app.route("/admin/reset-db", methods=["POST"])
+@app.route("/admin/reset-db", methods=['POST', 'GET'])
 @login_required
 @admin_required
 def reset_db():
