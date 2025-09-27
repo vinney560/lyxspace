@@ -868,6 +868,12 @@ def visit_course(course_id):
                 visit_progress.last_accessed = datetime.utcnow()
                 db.session.add(visit_progress)
                 db.session.commit()
+            if (enrollment.progress or 0.0) >= 100.0:
+                visit_progress.completed = True
+                if not visit_progress.completed_at:
+                    visit_progress.completed_at = datetime.utcnow()
+                db.session.add(visit_progress)
+                db.session.commit()
 
     else:
         progress = 0.0
