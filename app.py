@@ -345,6 +345,19 @@ def upload_file():
             print(f"✅ Image uploaded to DB: {unique_filename}")
             return jsonify({'message': 'Image uploaded successfully', 'file_id': new_file.id}), 200
 
+        elif ext.lower().replace('.', '') in {'py', 'html', 'js', 'java', 'json'}:
+            new_file = FileStore(
+                filename=unique_filename,
+                data=file_data,
+                file_type='code',
+                description=description,
+                uploader_id=current_user.id
+            )
+            db.session.add(new_file)
+            db.session.commit()
+            print(f"✅ Image uploaded to DB: {unique_filename}")
+            return jsonify({'message': 'Image uploaded successfully', 'file_id': new_file.id}), 200
+
     return jsonify({'error': 'File type not allowed'}), 400
 
 #---------------------------------------------------------
@@ -371,12 +384,15 @@ def files():
         _last_cache_time = datetime.utcnow()  # Reset timer
         print("[CACHE] Cache refreshed!")
 
+
     pdf_list, image_list = cached_files()
+    code_list = FileStore.query.filter_by(file_type='code').order_by(FileStore.upload_date.desc()).all()
 
     return render_template(
         "files.html",
         files=image_list,
         pdfs=pdf_list,
+        codes=code_list,
         user_allowed=current_user.is_allowed
     )
 
@@ -395,14 +411,24 @@ def download_file(file_id):
     # Try FileStore first (PDF)
     file_data = FileStore.query.get(file_id)
     if file_data:
-        print(f"📁 Attempting PDF download from DB: {file_data.filename}")
+        print(f"📁 Attempting PDF or Code download from DB: {file_data.filename}")
         from io import BytesIO
+        # Determine mimetype by extension
+        ext = os.path.splitext(file_data.filename)[1].lower()
+        if ext == '.pdf':
+            mimetype = 'application/pdf'
+        elif ext in ['.py', '.js', '.java', '.json', '.html', '.css']:
+            # Use text/plain for code files
+            mimetype = 'text/plain'
+        else:
+            mimetype = 'application/octet-stream'
         return send_file(
             BytesIO(file_data.data),
             as_attachment=True,
             download_name=file_data.filename,
-            mimetype='application/pdf'
+            mimetype=mimetype
         )
+
     # Fallback to File DB (image)
     file_data = File.query.get(file_id)
     if file_data:
