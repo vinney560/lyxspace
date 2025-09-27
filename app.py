@@ -49,7 +49,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 # File upload configuration
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
-ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'}
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'py', 'html', 'css', 'js', 'java', 'json'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 16MB max file size
 
@@ -355,8 +355,8 @@ def upload_file():
             )
             db.session.add(new_file)
             db.session.commit()
-            print(f"✅ Image uploaded to DB: {unique_filename}")
-            return jsonify({'message': 'Image uploaded successfully', 'file_id': new_file.id}), 200
+            print(f"✅ Code uploaded to DB: {unique_filename}")
+            return jsonify({'message': 'Code uploaded successfully', 'file_id': new_file.id}), 200
 
     return jsonify({'error': 'File type not allowed'}), 400
 
