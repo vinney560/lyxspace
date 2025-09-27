@@ -1263,3 +1263,27 @@ with app.app_context():
 if __name__ == "__main__":
     app.debug=True
     app.run()
+
+#--------------------------------------------------------------------
+# Admin Stats Route: Show all DB tables
+@app.route("/admin/stats")
+@login_required
+@admin_required
+def admin_stats():
+    users = User.query.all()
+    files = File.query.all()
+    filestores = FileStore.query.all()
+    courses = Course.query.all()
+    modules = CourseModule.query.all()
+    enrollments = Enrollment.query.all()
+    progresses = UserProgress.query.all()
+    return render_template(
+        "admin_stats.html",
+        users=users,
+        files=files,
+        filestores=filestores,
+        courses=courses,
+        modules=modules,
+        enrollments=enrollments,
+        progresses=progresses
+    )
