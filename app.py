@@ -802,40 +802,76 @@ def update_progress(course_id):
 @app.route("/course/<int:course_id>/visit", methods=["GET"])
 @login_required
 def visit_course(course_id):
-    # Mark course as visited by updating progress
+    # Mark course as visited by updating progress and safely recording a visit
     enrollment = Enrollment.query.filter_by(user_id=current_user.id, course_id=course_id, is_active=True).first()
     course = Course.query.get(course_id)
+
+    # Safe default: first module id or 1
+    first_module = CourseModule.query.filter_by(course_id=course_id).order_by(CourseModule.order).first()
+    safe_module_id = first_module.id if first_module else 1
+
     if enrollment:
-        # Increment progress by 10 (max 100)
-        enrollment.progress = min(enrollment.progress + 10.00, 100.0)
-        db.session.commit()
+        # Increment overall enrollment.progress by 10 (cap at 100) only if below 100
+        if (enrollment.progress or 0.0) < 100.0:
+            enrollment.progress = min((enrollment.progress or 0.0) + 10.0, 100.0)
+            db.session.add(enrollment)
+            db.session.commit()
+
         progress = enrollment.progress
 
-        # Update or create UserProgress record for visit
-        user_progress = UserProgress.query.filter_by(
+        # Normalize any existing UserProgress rows that have NULL module_id or lesson_id
+        null_rows = UserProgress.query.filter(
+            UserProgress.user_id == current_user.id,
+            UserProgress.course_id == course_id,
+            (UserProgress.module_id == None) | (UserProgress.lesson_id == None)
+        ).all()
+        for r in null_rows:
+            if not r.module_id:
+                r.module_id = safe_module_id
+            if not r.lesson_id:
+                r.lesson_id = 1
+            r.last_accessed = datetime.utcnow()
+            db.session.add(r)
+        if null_rows:
+            db.session.commit()
+
+        # Use canonical visit record: module_id=safe_module_id, lesson_id=1
+        visit_progress = UserProgress.query.filter_by(
             user_id=current_user.id,
             course_id=course_id,
-            module_id=None,
-            lesson_id=None
+            module_id=safe_module_id,
+            lesson_id=1
         ).first()
-        if user_progress:
-            user_progress.completed = True
-            user_progress.completed_at = datetime.utcnow()
-            user_progress.last_accessed = datetime.utcnow()
-        else:
-            user_progress = UserProgress(
+
+        if not visit_progress:
+            # First visit — create baseline with lesson_id=1
+            visit_progress = UserProgress(
                 user_id=current_user.id,
                 course_id=course_id,
-                module_id=None,
-                lesson_id=None,
-                completed=True,
-                completed_at=datetime.utcnow(),
-                last_accessed=datetime.utcnow()
+                module_id=safe_module_id,
+                lesson_id=1,
+                completed=False,
+                completed_at=None,
+                last_accessed=datetime.utcnow(),
+                time_spent=0,
+                score=0.0
             )
-            db.session.add(user_progress)
-        db.session.commit()
+            db.session.add(visit_progress)
+            db.session.commit()
+        else:
+            # Subsequent visits: increment lesson_id by 1 only when allowed
+            if (enrollment.progress or 0.0) < 100.0 and not visit_progress.completed:
+                try:
+                    visit_progress.lesson_id = int(visit_progress.lesson_id or 0) + 1
+                except Exception:
+                    visit_progress.lesson_id = (visit_progress.lesson_id or 0) + 1
+                visit_progress.last_accessed = datetime.utcnow()
+                db.session.add(visit_progress)
+                db.session.commit()
+
     else:
         progress = 0.0
+
     return render_template("progress_course.html", course=course, progress=progress)
 #--------------------------------------------------------------------
 # Admin Route to Add Comprehensive Sample Courses
