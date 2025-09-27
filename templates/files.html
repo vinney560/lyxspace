@@ -835,7 +835,7 @@
     <script>
         // Global variables
         let currentFileId = null;
-        let files = [];
+    // let files = []; // No longer needed
         let refreshInterval = null;
         let countdownInterval = null;
         const isAdmin = "{{ 'true' if current_user.id == 1 else 'false' }}";
@@ -843,9 +843,7 @@
 
         // DOM Content Loaded
         document.addEventListener('DOMContentLoaded', function() {
-            {% if current_user.is_allowed %}
-            loadFiles();
-            {% else %}
+            {% if not current_user.is_allowed %}
             // Set up auto-refresh if access is denied
             startAutoRefresh();
             {% endif %}
@@ -959,75 +957,7 @@
             }, duration);
         }
 
-        // Load files from server
-        async function loadFiles() {
-            try {
-                const response = await fetch('/api/files');
-                if (!response.ok) throw new Error('Network response was not ok');
-                
-                files = await response.json();
-                renderFiles();
-                
-                // If files loaded successfully and user has access, stop auto-refresh
-                {% if not current_user.is_allowed %}
-                stopAutoRefresh();
-                {% endif %}
-                
-                // Show toast with file count for non-admins
-                if (!isAdmin && files.length > 0) {
-                    showToast(`Loaded ${files.length} file${files.length !== 1 ? 's' : ''} successfully`, 'success', 3000);
-                }
-            } catch (error) {
-                console.error('Error loading files:', error);
-                showToast('Error loading files. Please try again.', 'error');
-                document.getElementById('filesGrid').innerHTML = '<div class="glass-morph p-6 sm:p-8 rounded-2xl text-center col-span-full"><i class="fas fa-exclamation-triangle text-2xl sm:text-3xl text-red-400 mb-3 sm:mb-4"></i><p class="text-gray-400 text-sm sm:text-base">Error loading files. Please try again.</p></div>';
-            }
-        }
-
-        // Render files in grid
-        function renderFiles() {
-            const filesGrid = document.getElementById('filesGrid');
-            const fileCount = document.getElementById('fileCount');
-            
-            if (fileCount) {
-                fileCount.textContent = `(${files.length} file${files.length !== 1 ? 's' : ''})`;
-            }
-            
-            if (files.length === 0) {
-                filesGrid.innerHTML = '<div class="glass-morph p-6 sm:p-8 rounded-2xl text-center col-span-full"><i class="fas fa-folder-open text-2xl sm:text-3xl text-blue-400 mb-3 sm:mb-4"></i><p class="text-gray-400 text-sm sm:text-base">No files available.{% if current_user.id == 1 %} Upload some files to get started.{% endif %}</p></div>';
-                return;
-            }
-            
-            filesGrid.innerHTML = files.map(file => `
-                <div class="file-card animate__animated animate__fadeIn">
-                    <div class="file-preview">
-                        ${file.file_type === 'pdf' ? 
-                            `<div class="pdf-preview">
-                                <i class="fas fa-file-pdf"></i>
-                                <span class="text-sm sm:text-base">PDF Document</span>
-                            </div>` : 
-                            `<img src="/api/file/${file.id}" alt="${file.filename}" loading="lazy">`
-                        }
-                    </div>
-                    <div class="p-4 flex flex-col flex-grow">
-                        <div class="file-name font-bold mb-2 truncate text-sm sm:text-base">${file.filename}</div>
-                        <div class="file-description text-gray-400 text-xs sm:text-sm mb-3 line-clamp-2 flex-grow">${file.description || 'No description provided'}</div>
-                        <div class="flex justify-between text-xs text-gray-500 mb-3">
-                            <span>${new Date(file.upload_date).toLocaleDateString()}</span>
-                            <span class="uppercase">${file.file_type}</span>
-                        </div>
-                        <div class="flex space-x-2 mt-auto">
-                            <button class="btn btn-secondary flex-1 text-xs sm:text-sm" onclick="viewFile(${file.id}, '${file.file_type}')">
-                                <i class="fas fa-eye mr-1"></i> View
-                            </button>
-                            <button class="btn flex-1 text-xs sm:text-sm" onclick="requestDownload(${file.id})">
-                                <i class="fas fa-download mr-1"></i> Download
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
+        // No AJAX file loading needed; files are rendered server-side by Jinja2
 
         // Handle file upload (admin only)
         async function handleUpload(e) {
