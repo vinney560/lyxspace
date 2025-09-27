@@ -1,6 +1,6 @@
 import os
 import traceback
-from flask import Flask, render_template, url_for, flash, redirect, send_from_directory, session, request, jsonify, send_file
+from flask import Flask, render_template, url_for, abort, safe_join, flash, redirect, send_from_directory, session, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_required, current_user, logout_user, login_user, LoginManager, UserMixin
 from sqlalchemy import create_engine
@@ -46,10 +46,19 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 # Static files folder
-STATIC_FOLDER = os.path.join(app.root_path, 'static')
+STATIC_FOLDER = os.path.join(app.root_path, 'uploads')
 app.config['STATIC_FOLDER'] = STATIC_FOLDER
 if not os.path.exists(STATIC_FOLDER):
     os.makedirs(STATIC_FOLDER)
+
+# -------------------- Folder Config --------------------
+PDF_FOLDER = os.path.join(app.root_path, 'uploads', 'pdfs')
+IMAGE_FOLDER = os.path.join(app.root_path, 'uploads', 'images')
+os.makedirs(PDF_FOLDER, exist_ok=True)
+os.makedirs(IMAGE_FOLDER, exist_ok=True)
+
+app.config['PDF_FOLDER'] = PDF_FOLDER
+app.config['IMAGE_FOLDER'] = IMAGE_FOLDER
 db = SQLAlchemy(app)
 Compress(app)
 #--------------------------------------------------------------------
@@ -278,33 +287,37 @@ def api_files():
         })
     return jsonify(file_list)
 
-#--------------------------------------------------------------------
+# -------------------- UPLOAD ROUTE --------------------
 @app.route("/api/upload", methods=['POST'])
 @login_required
 def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
-    
+
     file = request.files['file']
     description = request.form.get('description', '')
-    
+
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
-    
+
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         base, ext = os.path.splitext(filename)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        unique_filename = f"{base}_{timestamp}{ext}"
-        ext = ext.lower()
-        if ext == '.pdf':
-            save_folder = app.config['STATIC_FOLDER']
+        unique_filename = f"{base}_{timestamp}{ext.lower()}"
+
+        # Save to correct folder based on type
+        if ext.lower() == '.pdf':
+            save_folder = app.config['PDF_FOLDER']
             file_type = 'pdf'
         else:
-            save_folder = app.config['UPLOAD_FOLDER']
+            save_folder = app.config['IMAGE_FOLDER']
             file_type = 'image'
-        file.save(os.path.join(save_folder, unique_filename))
-        # Store only the filename, not the full path
+
+        save_path = os.path.join(save_folder, unique_filename)
+        file.save(save_path)
+
+        # Save record to DB (only store filename, not full path)
         new_file = File(
             filename=unique_filename,
             filepath=unique_filename,
@@ -314,28 +327,52 @@ def upload_file():
         )
         db.session.add(new_file)
         db.session.commit()
+
+        print(f"✅ File uploaded: {save_path}")
+
         return jsonify({'message': 'File uploaded successfully'}), 200
     else:
         return jsonify({'error': 'File type not allowed'}), 400
 
-#--------------------------------------------------------------------
+
+# -------------------- DOWNLOAD ROUTE --------------------
 @app.route("/api/download/<int:file_id>", methods=['POST'])
 @login_required
 @protect_file
 def download_file(file_id):
     security_answer = request.json.get('security_answer', '')
-    
-    # Security check
+
+    # ✅ Security check
     if security_answer.lower() != 'lyxspace2025':
         return jsonify({'error': 'Security check failed'}), 403
-    
+
     file_data = File.query.get_or_404(file_id)
-    # Determine folder
+
+    # ✅ Determine correct folder based on type
     if file_data.file_type == 'pdf':
-        folder = app.config['STATIC_FOLDER']
+        folder = app.config['PDF_FOLDER']
+        mimetype = 'application/pdf'
     else:
-        folder = app.config['UPLOAD_FOLDER']
-    return send_file(os.path.join(folder, file_data.filepath), as_attachment=True, download_name=file_data.filename)
+        folder = app.config['IMAGE_FOLDER']
+        mimetype = None  # Let Flask detect image type automatically
+
+    # ✅ Build full file path safely
+    file_path = safe_join(folder, file_data.filepath)
+
+    # ✅ Debug logs
+    print(f"📁 Attempting download: {file_path}")
+    print(f"📁 File exists: {os.path.exists(file_path)}")
+
+    if not os.path.exists(file_path):
+        return jsonify({'error': 'File not found on server'}), 404
+
+    # ✅ Send the file as a download
+    return send_file(
+        file_path,
+        as_attachment=True,
+        download_name=file_data.filename,
+        mimetype=mimetype
+    )
 
 #--------------------------------------------------------------------
 @app.route("/api/file/<int:file_id>")
@@ -344,7 +381,7 @@ def download_file(file_id):
 def get_file(file_id):
     file_data = File.query.get_or_404(file_id)
     if file_data.file_type == 'pdf':
-        folder = app.config['STATIC_FOLDER']
+        folder = app.config['PDF_FOLDER']
     else:
         folder = app.config['UPLOAD_FOLDER']
     return send_file(os.path.join(folder, file_data.filepath))
@@ -450,10 +487,10 @@ def course_detail(course_id):
             'is_enrolled': enrollment is not None,
             'progress': enrollment.progress if enrollment else 0.0
         }
-        import pprint
-        print("\n=== DEBUG: course_data ===")
-        pprint.pprint(course_data)
-        print("=== END DEBUG ===\n")
+        #import pprint
+        # print("\n=== DEBUG: course_data ===")
+        # pprint.pprint(course_data)
+        # print("=== END DEBUG ===\n")
 
         return render_template("course_detail.html", course=course_data)
 
@@ -1136,7 +1173,7 @@ def delete_file(file_id):
     # Delete physical file
     # Remove from correct folder
     if file_data.file_type == 'pdf':
-        folder = app.config['STATIC_FOLDER']
+        folder = app.config['PDF_FOLDER']
     else:
         folder = app.config['UPLOAD_FOLDER']
     file_path = os.path.join(folder, file_data.filepath)
