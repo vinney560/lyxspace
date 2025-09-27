@@ -92,14 +92,17 @@ class File(db.Model):
     description = db.Column(db.Text)
     uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-# New FileStore model for PDFs
+# Unified FileStore model for PDFs and images
 class FileStore(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(255), nullable=False)
-    data = db.Column(db.LargeBinary, nullable=False)  # Store actual PDF data
+    data = db.Column(db.LargeBinary, nullable=False)  # Store actual file data
+    file_type = db.Column(db.String(50), nullable=False)  # 'pdf' or 'image'
     upload_date = db.Column(db.DateTime, default=nairobi_time)
     description = db.Column(db.Text)
     uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+# In-memory cache for PDFs and images
+file_cache = {}
 #--------------------------------------------------------------------
 # Enrollment and Course Models
 class Course(db.Model):
@@ -255,82 +258,69 @@ def is_authenticated():
 def home():
     return render_template("index.html")
 #--------------------------------------------------------------------
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    if current_user.is_authenticated:
-        # Already logged in, redirect to main page
-        return redirect(url_for('files'))
-    next_page = request.args.get("next") or request.form.get("next")
-    if request.method == 'POST':
-        mobile = request.form.get('mobile')
-        username = request.form.get('username')
-        # Check if user exists
-        user = User.query.filter_by(mobile=mobile).first()
-        if not user:
-            # Create new user
-            user = User(mobile=mobile, username=username, allowed="no")
-            db.session.add(user)
-            db.session.commit()
-            flash("New account created. Please wait for admin approval.", "info")
-        else:
-            # Update username if provided
-            if username and user.username != username:
-                user.username = username
-                db.session.commit()
-        login_user(user)
-        flash("Login successful!", "success")
-        return redirect(next_page or url_for('files'))
-    return render_template("login.html")
 
-#--------------------------------------------------------------------
-@app.route("/logout")
+@app.route("/api/upload", methods=['POST'])
 @login_required
-def logout():
-    # Delete user after logout (as requested)
-    user_id = current_user.id
-    logout_user()
-    
-    # Only delete if not admin
-    if user_id != 1:
-        user = User.query.get(user_id)
-        if user:
-            db.session.delete(user)
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+
+    file = request.files['file']
+    description = request.form.get('description', '')
+
+    if file.filename.strip() == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        base, ext = os.path.splitext(filename)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        unique_filename = f"{base}_{timestamp}{ext.lower()}"
+        file_data = file.read()
+        if ext.lower() == '.pdf':
+            new_file = FileStore(
+                filename=unique_filename,
+                data=file_data,
+                file_type='pdf',
+                description=description,
+                uploader_id=current_user.id
+            )
+            db.session.add(new_file)
             db.session.commit()
-    
-    flash("You have been logged out.", "info")
-    return redirect(url_for('login'))
+            print(f"✅ PDF uploaded to DB: {unique_filename}")
+            return
+        elif ext.lower().replace('.', '') in {'png', 'jpg', 'jpeg', 'gif', 'webp'}:
+            new_file = FileStore(
+                filename=unique_filename,
+                data=file_data,
+                file_type='image',
+                description=description,
+                uploader_id=current_user.id
+            )
+            db.session.add(new_file)
+            db.session.commit()
+            print(f"✅ Image uploaded to DB: {unique_filename}")
+            return
+
+    return jsonify({'error': 'File type not allowed'}), 400
+def files():
+    # Duplicate function, replaced by improved version below. Remove this.
+    pass
 
 #--------------------------------------------------------------------
+
 @app.route("/files")
 @login_required
 def files():
-    files_list = []
     pdf_list = []
+    image_list = []
     if current_user.is_allowed:
-        files_list = File.query.order_by(File.upload_date.desc()).all()
-        pdf_list = FileStore.query.order_by(FileStore.upload_date.desc()).all()
-        print(f"[DEBUG] Found {len(pdf_list)} PDFs in FileStore for user {current_user.id}")
+        pdf_list = FileStore.query.filter_by(file_type='pdf').order_by(FileStore.upload_date.desc()).all()
+        image_list = FileStore.query.filter_by(file_type='image').order_by(FileStore.upload_date.desc()).all()
+        print(f"[DEBUG] Found {len(pdf_list)} PDFs and {len(image_list)} images in FileStore for user {current_user.id}")
     else:
         print(f"[DEBUG] User {current_user.id} not allowed. No files or PDFs shown.")
-    return render_template("files.html", files=files_list, pdfs=pdf_list, user_allowed=current_user.is_allowed)
-
-#--------------------------------------------------------------------
-@app.route("/api/files")
-@login_required
-@protect_file
-def api_files():
-    files = File.query.order_by(File.upload_date.desc()).all()
-    file_list = []
-    for file in files:
-        file_list.append({
-            'id': file.id,
-            'filename': file.filename,
-            'filepath': file.filepath,
-            'file_type': file.file_type,
-            'upload_date': file.upload_date.isoformat(),
-            'description': file.description
-        })
-    return jsonify(file_list)
+    return render_template("files.html", files=image_list, pdfs=pdf_list, user_allowed=current_user.is_allowed)
 
 # -------------------- UPLOAD ROUTE --------------------
 @app.route("/api/upload", methods=['POST'])
@@ -422,20 +412,38 @@ def download_file(file_id):
     return jsonify({'error': 'File not found'}), 404
 
 #--------------------------------------------------------------------
+
 @app.route("/api/file/<int:file_id>")
 @login_required
 @protect_file
 def get_file(file_id):
-    # Try FileStore first (PDF)
-    pdf_data = FileStore.query.get(file_id)
-    if pdf_data:
+    # Try cache first
+    if file_id in file_cache:
+        cached = file_cache[file_id]
         from io import BytesIO
+        mimetype = 'application/pdf' if cached['file_type'] == 'pdf' else None
         return send_file(
-            BytesIO(pdf_data.data),
-            download_name=pdf_data.filename,
-            mimetype='application/pdf'
+            BytesIO(cached['data']),
+            download_name=cached['filename'],
+            mimetype=mimetype
         )
-    # Fallback to File DB (image)
+    # Try FileStore
+    file_record = FileStore.query.get(file_id)
+    if file_record:
+        # Cache the file
+        file_cache[file_id] = {
+            'data': file_record.data,
+            'filename': file_record.filename,
+            'file_type': file_record.file_type
+        }
+        from io import BytesIO
+        mimetype = 'application/pdf' if file_record.file_type == 'pdf' else None
+        return send_file(
+            BytesIO(file_record.data),
+            download_name=file_record.filename,
+            mimetype=mimetype
+        )
+    # Fallback to legacy File DB (should be deprecated)
     file_data = File.query.get_or_404(file_id)
     return send_file(file_data.filepath)
 #--------------------------------------------------------------------
@@ -1257,7 +1265,29 @@ def delete_file(file_id):
     db.session.commit()
     flash("File deleted successfully.", "success")
     return redirect(url_for('admin_panel'))
-
+#--------------------------------------------------------------------
+# Admin Route to Drop All Tables and Reset DB
+@app.route("/admin/reset-db", methods=["POST"])
+@login_required
+@admin_required
+def reset_db():
+    try:
+        db.session.close()
+        db.drop_all()
+        db.create_all()
+        # Recreate admin user
+        admin = User.query.get(1)
+        if not admin:
+            admin = User(id=1, mobile="0740694312", username="Administrator", allowed="yes")
+            db.session.add(admin)
+            db.session.commit()
+        flash("Database has been reset to default and all data dropped.", "warning")
+        print("[ADMIN] Database reset to clean state.")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error resetting database: {str(e)}", "error")
+        print(f"Error in reset_db route: {e}")
+    return redirect(url_for('admin_panel'))
 #--------------------------------------------------------------------
 @app.errorhandler(404)
 def not_found_error(error):
