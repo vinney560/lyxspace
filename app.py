@@ -91,6 +91,15 @@ class File(db.Model):
     upload_date = db.Column(db.DateTime, default=nairobi_time)
     description = db.Column(db.Text)
     uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+# New FileStore model for PDFs
+class FileStore(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False)
+    data = db.Column(db.LargeBinary, nullable=False)  # Store actual PDF data
+    upload_date = db.Column(db.DateTime, default=nairobi_time)
+    description = db.Column(db.Text)
+    uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 #--------------------------------------------------------------------
 # Enrollment and Course Models
 class Course(db.Model):
@@ -198,6 +207,7 @@ def offline_html():
 @app.route('/service-worker.js')
 def sw():
     return send_from_directory('static', 'service-worker.js', mimetype='application/javascript')
+#-------------------------------------------------------------------
 @app.route("/about")
 def about():
     return render_template("about.html", current_year=datetime.utcnow().year)
@@ -317,6 +327,7 @@ def api_files():
             'description': file.description
         })
     return jsonify(file_list)
+
 # -------------------- UPLOAD ROUTE --------------------
 @app.route("/api/upload", methods=['POST'])
 @login_required
@@ -331,44 +342,46 @@ def upload_file():
         return jsonify({'error': 'No selected file'}), 400
 
     if file and allowed_file(file.filename):
-        # Clean and timestamp filename
         filename = secure_filename(file.filename)
         base, ext = os.path.splitext(filename)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         unique_filename = f"{base}_{timestamp}{ext.lower()}"
 
-        # Decide storage folder based on file type
         if ext.lower() == '.pdf':
             save_folder = app.config['PDF_FOLDER']
-            file_type = 'pdf'
-            relative_folder = 'uploads/pdfs'
+            save_path = os.path.join(save_folder, unique_filename)
+            file.save(save_path)
+            # Save to FileStore DB
+            pdf_data = file.read()
+            new_pdf = FileStore(
+                filename=unique_filename,
+                data=pdf_data,
+                description=description,
+                uploader_id=current_user.id
+            )
+            db.session.add(new_pdf)
+            db.session.commit()
+            print(f"✅ PDF uploaded: {save_path}")
+            return jsonify({'message': 'PDF uploaded successfully', 'file_id': new_pdf.id}), 200
         else:
             save_folder = app.config['IMAGE_FOLDER']
-            file_type = 'image'
-            relative_folder = 'uploads/images'
-
-        # Save the file to disk
-        save_path = os.path.join(save_folder, unique_filename)
-        file.save(save_path)
-
-        # Store relative path
-        relative_path = os.path.join(relative_folder, unique_filename)
-
-        # Save file record to DB
-        new_file = File(
-            filename=unique_filename,
-            filepath=relative_path, 
-            file_type=file_type,
-            description=description,
-            uploader_id=current_user.id
-        )
-        db.session.add(new_file)
-        db.session.commit()
-
-        print(f"✅ File uploaded: {save_path}")
-        return jsonify({'message': 'File uploaded successfully', 'file_id': new_file.id}), 200
+            save_path = os.path.join(save_folder, unique_filename)
+            file.save(save_path)
+            # Save to File DB
+            new_file = File(
+                filename=unique_filename,
+                filepath=save_path,
+                file_type='image',
+                description=description,
+                uploader_id=current_user.id
+            )
+            db.session.add(new_file)
+            db.session.commit()
+            print(f"✅ Image uploaded: {save_path}")
+            return jsonify({'message': 'Image uploaded successfully', 'file_id': new_file.id}), 200
 
     return jsonify({'error': 'File type not allowed'}), 400
+
 
 # -------------------- DOWNLOAD ROUTE --------------------
 @app.route("/api/download/<int:file_id>", methods=['POST'])
@@ -381,28 +394,32 @@ def download_file(file_id):
     if security_answer.lower() != 'lyxspace2025':
         return jsonify({'error': 'Security check failed'}), 403
 
-    file_data = File.query.get_or_404(file_id)
-
-    # ✅ Build full absolute path from the stored relative path
-    file_path = os.path.join(app.root_path, file_data.filepath)
-
-    # Debug info for troubleshooting
-    print(f"📁 Attempting download from: {file_path}")
-    print(f"📁 Exists: {os.path.exists(file_path)}")
-
-    if not os.path.exists(file_path):
-        return jsonify({'error': 'File not found on server'}), 404
-
-    # ✅ Set MIME type based on file_type
-    mimetype = 'application/pdf' if file_data.file_type == 'pdf' else None
-
-    # ✅ Send the file with the original filename
-    return send_file(
-        file_path,
-        as_attachment=True,
-        download_name=file_data.filename,
-        mimetype=mimetype
-    )
+    # Try FileStore first (PDF)
+    file_data = FileStore.query.get(file_id)
+    if file_data:
+        print(f"📁 Attempting PDF download from DB: {file_data.filename}")
+        from io import BytesIO
+        return send_file(
+            BytesIO(file_data.data),
+            as_attachment=True,
+            download_name=file_data.filename,
+            mimetype='application/pdf'
+        )
+    # Fallback to File DB (image)
+    file_data = File.query.get(file_id)
+    if file_data:
+        file_path = file_data.filepath
+        print(f"📁 Attempting image download from: {file_path}")
+        print(f"📁 Exists: {os.path.exists(file_path)}")
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'File not found on server'}), 404
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=file_data.filename,
+            mimetype=None
+        )
+    return jsonify({'error': 'File not found'}), 404
 
 #--------------------------------------------------------------------
 @app.route("/api/file/<int:file_id>")
@@ -1101,7 +1118,7 @@ def seed_courses():
     return redirect(url_for('admin_panel'))
 
 #--------------------------------------------------------------------
-# Admin Route to Clear All Courses (Dangerous - for development only)
+# Admin Route to Clear All Courses (Dangerous - for recreation only)
 @app.route("/admin/clear-courses")
 @login_required
 @admin_required
