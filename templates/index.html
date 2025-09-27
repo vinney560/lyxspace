@@ -4,7 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home | LyxSpace</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Enhanced Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com 'nonce-2726c7f5c9'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <!-- Safe Meta Tags -->
+    <meta name="description" content="LyxSpace is a secure education platform providing access to technology courses, coding resources, and a vibrant learning community." />
+    <meta name="keywords" content="education, coding, programming, web development, technology, online courses, learn to code" />
+    <meta name="author" content="Vincent Kipngetich" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://lyxspace.onrender.com/" />
+    <link rel="icon" href="https://lyxspace.onrender.com/favicon.ico" />
+    <!-- Social Meta -->
+    <meta property="og:title" content="LyxSpace - Education Platform" />
+    <meta property="og:description" content="Empowering learners with unlimited access to technology courses, resources, and community support." />
+    <meta property="og:image" content="https://lyxspace.onrender.com/favicon.ico" />
+    <meta property="og:url" content="https://lyxspace.onrender.com" />
+    <meta name="twitter:card" content="summary" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -139,9 +156,9 @@
             <div class="hidden md:flex space-x-8">
                 <a href="#" class="hover:text-blue-400 transition-colors">Home</a>
                 <a href="/courses" class="hover:text-blue-400 transition-colors">Courses</a>
-                <a href="#" class="hover:text-blue-400 transition-colors">Resources</a>
-                <a href="#" class="hover:text-blue-400 transition-colors">About</a>
-                <a href="#" class="hover:text-blue-400 transition-colors">Contact</a>
+                <a href="/resources" class="hover:text-blue-400 transition-colors">Resources</a>
+                <a href="/about" class="hover:text-blue-400 transition-colors">About</a>
+                <a href="/developer" class="hover:text-blue-400 transition-colors">Developer</a>
             </div>
             <button class="btn pulse" onclick="window.location.href='/login'">Get Started</button>
         </div>

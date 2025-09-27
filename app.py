@@ -20,18 +20,21 @@ app.config["SECRET_KEY"] = "aokjijrgiljiwght"
 
 def database():
     db_link = "postgresql://lyxin:JsVsgW7AGF6SWqoCdwXseMCg9CKhEQzD@dpg-d3am2ii4d50c73deb4kg-a.oregon-postgres.render.com/lyxspace"
-    db_link2 = "sqlite:///default.db"
     if db_link:
         try:
             engine = create_engine(db_link)
             engine.connect().close()
-            print("Connected to Database.")
+            print("=" * 30)
+            print("🎉 Connected to Online Database.")
+            print("=" * 30)
             return db_link
         except OperationalError as e:
+            print("x" * 30)
             print("Failed to Connect to Database.", e)
-    else:
-        print("Using default SQLite database.")
-        return db_link2
+            print("x" * 30)
+    db_link2 = "sqlite:///default1.db"
+    print("Using default SQLite database.")
+    return db_link2
 
 app.config["SQLALCHEMY_DATABASE_URI"] = database()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -40,7 +43,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 16MB max file size
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -52,13 +55,17 @@ if not os.path.exists(STATIC_FOLDER):
     os.makedirs(STATIC_FOLDER)
 
 # -------------------- Folder Config --------------------
-PDF_FOLDER = os.path.join(app.root_path, 'uploads', 'pdfs')
-IMAGE_FOLDER = os.path.join(app.root_path, 'uploads', 'images')
+BASE_UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
+PDF_FOLDER = os.path.join(BASE_UPLOAD_FOLDER, 'pdfs')
+IMAGE_FOLDER = os.path.join(BASE_UPLOAD_FOLDER, 'images')
+
 os.makedirs(PDF_FOLDER, exist_ok=True)
 os.makedirs(IMAGE_FOLDER, exist_ok=True)
 
 app.config['PDF_FOLDER'] = PDF_FOLDER
 app.config['IMAGE_FOLDER'] = IMAGE_FOLDER
+
+
 db = SQLAlchemy(app)
 Compress(app)
 #--------------------------------------------------------------------
@@ -84,7 +91,6 @@ class File(db.Model):
     upload_date = db.Column(db.DateTime, default=nairobi_time)
     description = db.Column(db.Text)
     uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-#--------------------------------------------------------------------
 #--------------------------------------------------------------------
 # Enrollment and Course Models
 class Course(db.Model):
@@ -180,13 +186,38 @@ def allowed_file(filename):
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(app.config['UPLOAD_FOLDER'], 'favicon.ico')
+#--------------------------------------------------------------------
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), 'manifest.json', mimetype='application/manifest+json')
+#--------------------------------------------------------------------
+@app.route("/offline.html")
+def offline_html():
+    return render_template("offline.html")
+#-------------------------------------------------------------------
+@app.route('/service-worker.js')
+def sw():
+    return send_from_directory('static', 'service-worker.js', mimetype='application/javascript')
+@app.route("/about")
+def about():
+    return render_template("about.html", current_year=datetime.utcnow().year)
 
+#------------------------------------------------------------------
+@app.route("/resources")
+def resources():
+    return render_template("resource.html")
+
+#------------------------------------------------------------------
+@app.route("/developer")
+def developer():
+    return render_template("developer.html", current_year=datetime.utcnow().year)
+#------------------------------------------------------------------
 # Serve uploaded files
 @app.route('/uploads/<filename>')
 @protect_file
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
+#--------------------------------------------------------------------
 # Serve static files
 @app.route('/static/<path:filename>')
 def static_file(filename):
@@ -286,7 +317,6 @@ def api_files():
             'description': file.description
         })
     return jsonify(file_list)
-
 # -------------------- UPLOAD ROUTE --------------------
 @app.route("/api/upload", methods=['POST'])
 @login_required
@@ -297,30 +327,37 @@ def upload_file():
     file = request.files['file']
     description = request.form.get('description', '')
 
-    if file.filename == '':
+    if file.filename.strip() == '':
         return jsonify({'error': 'No selected file'}), 400
 
     if file and allowed_file(file.filename):
+        # Clean and timestamp filename
         filename = secure_filename(file.filename)
         base, ext = os.path.splitext(filename)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         unique_filename = f"{base}_{timestamp}{ext.lower()}"
 
-        # Save to correct folder based on type
+        # Decide storage folder based on file type
         if ext.lower() == '.pdf':
             save_folder = app.config['PDF_FOLDER']
             file_type = 'pdf'
+            relative_folder = 'uploads/pdfs'
         else:
             save_folder = app.config['IMAGE_FOLDER']
             file_type = 'image'
+            relative_folder = 'uploads/images'
 
+        # Save the file to disk
         save_path = os.path.join(save_folder, unique_filename)
         file.save(save_path)
 
-        # Save record to DB (only store filename, not full path)
+        # Store relative path
+        relative_path = os.path.join(relative_folder, unique_filename)
+
+        # Save file record to DB
         new_file = File(
             filename=unique_filename,
-            filepath=unique_filename,
+            filepath=relative_path, 
             file_type=file_type,
             description=description,
             uploader_id=current_user.id
@@ -329,11 +366,9 @@ def upload_file():
         db.session.commit()
 
         print(f"✅ File uploaded: {save_path}")
+        return jsonify({'message': 'File uploaded successfully', 'file_id': new_file.id}), 200
 
-        return jsonify({'message': 'File uploaded successfully'}), 200
-    else:
-        return jsonify({'error': 'File type not allowed'}), 400
-
+    return jsonify({'error': 'File type not allowed'}), 400
 
 # -------------------- DOWNLOAD ROUTE --------------------
 @app.route("/api/download/<int:file_id>", methods=['POST'])
@@ -348,25 +383,20 @@ def download_file(file_id):
 
     file_data = File.query.get_or_404(file_id)
 
-    # ✅ Determine correct folder based on type
-    if file_data.file_type == 'pdf':
-        folder = app.config['PDF_FOLDER']
-        mimetype = 'application/pdf'
-    else:
-        folder = app.config['IMAGE_FOLDER']
-        mimetype = None  # Let Flask detect image type automatically
+    # ✅ Build full absolute path from the stored relative path
+    file_path = os.path.join(app.root_path, file_data.filepath)
 
-    # ✅ Build full file path safely
-    file_path = safe_join(folder, file_data.filepath)
-
-    # ✅ Debug logs
-    print(f"📁 Attempting download: {file_path}")
-    print(f"📁 File exists: {os.path.exists(file_path)}")
+    # Debug info for troubleshooting
+    print(f"📁 Attempting download from: {file_path}")
+    print(f"📁 Exists: {os.path.exists(file_path)}")
 
     if not os.path.exists(file_path):
         return jsonify({'error': 'File not found on server'}), 404
 
-    # ✅ Send the file as a download
+    # ✅ Set MIME type based on file_type
+    mimetype = 'application/pdf' if file_data.file_type == 'pdf' else None
+
+    # ✅ Send the file with the original filename
     return send_file(
         file_path,
         as_attachment=True,
@@ -384,8 +414,7 @@ def get_file(file_id):
         folder = app.config['PDF_FOLDER']
     else:
         folder = app.config['UPLOAD_FOLDER']
-    return send_file(os.path.join(folder, file_data.filepath))
-#--------------------------------------------------------------------
+    return send_file(os.path.join(file_data.filepath))
 #--------------------------------------------------------------------
 # Courses Route
 @app.route("/courses")
@@ -469,7 +498,6 @@ def course_detail(course_id):
             'students': int(enrollment_count) if enrollment_count is not None else 0,
             'price': f"${course.price:.2f}" if course.price > 0 else "Free",
 
-            # ✅ Use a new key name to avoid conflict with DB field
             'module_list': [
                 {
                     'title': module.title,
@@ -479,7 +507,6 @@ def course_detail(course_id):
                 } for module in modules
             ] if modules else [],
 
-            # ✅ These are integers (counts), keep them as such
             'resources': course.resources or 0,
             'quizzes': course.quizzes or 0,
 

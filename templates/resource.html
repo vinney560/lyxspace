@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources | LyxSpace</title>
+    <!-- Social Meta -->
+    <meta property="og:title" content="LyxSpace - Education Platform" />
+    <meta property="og:description" content="Empowering learners with unlimited access to technology courses, resources, and community support." />
+    <meta property="og:image" content="https://lyxspace.onrender.com/favicon.ico" />
+    <meta property="og:url" content="https://lyxspace.onrender.com" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #111827; color: #F9FAFB; }
+        .gradient-text { background: linear-gradient(90deg, #3B82F6, #8B5CF6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+        .glass-morph { background: rgba(30,30,40,0.6); backdrop-filter: blur(12px); border-radius: 20px; box-shadow: 0 8px 32px rgba(0,31,135,0.2); border: 1px solid rgba(59,130,246,0.3); }
+        .btn { background: linear-gradient(90deg, #3B82F6, #8B5CF6); color: white; border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="glass-morph sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="logo-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                        <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                        <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                </div>
+                <span class="text-2xl font-bold gradient-text">LyxSpace</span>
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="/" class="hover:text-blue-400 transition-colors">Home</a>
+                <a href="/courses" class="hover:text-blue-400 transition-colors">Courses</a>
+                <a href="/resources" class="hover:text-blue-400 transition-colors">Resources</a>
+                <a href="/about" class="hover:text-blue-400 transition-colors">About</a>
+                <a href="/developer" class="hover:text-blue-400 transition-colors">Developer</a>
+            </div>
+            <button class="btn" onclick="window.location.href='/login'">Get Started</button>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-10">
+        <section class="glass-morph p-8 md:p-12 rounded-3xl mb-10">
+            <h1 class="text-3xl md:text-5xl font-bold gradient-text mb-6">Resources</h1>
+            <p class="text-lg text-gray-300 mb-8">Explore curated resources to boost your learning journey: e-books, tutorials, project files, guides, and more. All designed to help you master technology and coding skills.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Example Resource Cards -->
+                <div class="glass-morph p-6 rounded-xl">
+                    <h2 class="text-xl font-bold mb-2">Python Basics eBook</h2>
+                    <p class="text-gray-300 mb-2">A comprehensive guide for beginners to learn Python programming.</p>
+                    <a href="#" class="btn">Download</a>
+                </div>
+                <div class="glass-morph p-6 rounded-xl">
+                    <h2 class="text-xl font-bold mb-2">Web Dev Starter Kit</h2>
+                    <p class="text-gray-300 mb-2">Starter templates and resources for building modern websites.</p>
+                    <a href="#" class="btn">Download</a>
+                </div>
+                <div class="glass-morph p-6 rounded-xl">
+                    <h2 class="text-xl font-bold mb-2">JavaScript Projects</h2>
+                    <p class="text-gray-300 mb-2">Hands-on project files to practice and improve your JS skills.</p>
+                    <a href="#" class="btn">Download</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-8 mt-12 border-t border-gray-800">
+        <div class="max-w-6xl mx-auto px-4 text-center text-gray-500">
+            &copy; 2025 LyxSpace. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>
