@@ -37,6 +37,14 @@ def database():
     return db_link2
 
 app.config["SQLALCHEMY_DATABASE_URI"] = database()
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "pool_size": 5,           # keep 5 connections open
+    "max_overflow": 10,       # allow 10 extra on demand
+    "pool_timeout": 30,       # wait 30s before giving up on a connection
+    "pool_recycle": 1800,     # recycle connections every 30 mins (fixes dropped SSL)
+    "pool_pre_ping": True     # ping DB before using a connection (auto-reconnect)
+}
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 # File upload configuration
@@ -340,19 +348,26 @@ def upload_file():
     return jsonify({'error': 'File type not allowed'}), 400
 
 #--------------------------------------------------------------------
+from functools import lru_cache
+
+# ✅ Cache the query results in memory (auto-refreshes on restart)
+@lru_cache(maxsize=1)
+def cached_files():
+    print("[DEBUG] Loading files from DB (cache miss)...")
+    pdf_list = FileStore.query.filter_by(file_type='pdf').order_by(FileStore.upload_date.desc()).all()
+    image_list = FileStore.query.filter_by(file_type='image').order_by(FileStore.upload_date.desc()).all()
+    return pdf_list, image_list
 
 @app.route("/files")
 @login_required
 def files():
-    pdf_list = []
-    image_list = []
-    if current_user.is_allowed:
-        pdf_list = FileStore.query.filter_by(file_type='pdf').order_by(FileStore.upload_date.desc()).all()
-        image_list = FileStore.query.filter_by(file_type='image').order_by(FileStore.upload_date.desc()).all()
-        print(f"[DEBUG] Found {len(pdf_list)} PDFs and {len(image_list)} images in FileStore for user {current_user.id}")
-    else:
-        print(f"[DEBUG] User {current_user.id} not allowed. No files or PDFs shown.")
-    return render_template("files.html", files=image_list, pdfs=pdf_list, user_allowed=current_user.is_allowed)
+    pdf_list, image_list = cached_files()
+    return render_template(
+        "files.html",
+        files=image_list,
+        pdfs=pdf_list,
+        user_allowed=current_user.is_allowed
+    )
 
 # -------------------- DOWNLOAD ROUTE --------------------
 @app.route("/api/download/<int:file_id>", methods=['POST'])
