@@ -1,6 +1,6 @@
 import os
 import traceback
-from flask import Flask, render_template, url_for, abort, safe_join, flash, redirect, send_from_directory, session, request, jsonify, send_file
+from flask import Flask, render_template, url_for, abort, flash, redirect, send_from_directory, session, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_required, current_user, logout_user, login_user, LoginManager, UserMixin
 from sqlalchemy import create_engine
