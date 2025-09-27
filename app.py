@@ -1215,7 +1215,7 @@ def admin_stats():
 @admin_required
 def admin_panel():
     users = User.query.filter(User.id != 1).all()  # Exclude admin
-    files = File.query.all()
+    files = FileStore.query.all()
     return render_template("admin.html", users=users, files=files)
 
 #--------------------------------------------------------------------
