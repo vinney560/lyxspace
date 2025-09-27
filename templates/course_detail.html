@@ -713,7 +713,7 @@
                     <div class="mt-3">
                         <div class="flex justify-between text-sm text-green-300 mb-1">
                             <span>Progress</span>
-                            <span>{{ (course.progress * 100)|round|int }}%</span>
+                            <span>{{ (course.progress|round|int) }}%</span>
                         </div>
                         <div class="w-full bg-gray-700 rounded-full h-2">
                             <div class="bg-green-500 h-2 rounded-full transition-all duration-500" 
