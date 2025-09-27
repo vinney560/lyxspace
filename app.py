@@ -347,13 +347,15 @@ def upload_file():
 
     return jsonify({'error': 'File type not allowed'}), 400
 
-#--------------------------------------------------------------------
+#---------------------------------------------------------
 from functools import lru_cache
 
-# ✅ Cache the query results in memory (auto-refreshes on restart)
+CACHE_TTL = 600  # 10 minutes in seconds
+_last_cache_time = None
+
 @lru_cache(maxsize=1)
 def cached_files():
-    print("[DEBUG] Loading files from DB (cache miss)...")
+    print("[DEBUG] Loading files from DB (cache miss or expired)...")
     pdf_list = FileStore.query.filter_by(file_type='pdf').order_by(FileStore.upload_date.desc()).all()
     image_list = FileStore.query.filter_by(file_type='image').order_by(FileStore.upload_date.desc()).all()
     return pdf_list, image_list
@@ -361,13 +363,23 @@ def cached_files():
 @app.route("/files")
 @login_required
 def files():
+    global _last_cache_time
+
+    # ✅ Check if cache is expired or never set
+    if _last_cache_time is None or (datetime.utcnow() - _last_cache_time) > timedelta(seconds=CACHE_TTL):
+        cached_files.cache_clear()        # Clear old cache
+        _last_cache_time = datetime.utcnow()  # Reset timer
+        print("[CACHE] Cache refreshed!")
+
     pdf_list, image_list = cached_files()
+
     return render_template(
         "files.html",
         files=image_list,
         pdfs=pdf_list,
         user_allowed=current_user.is_allowed
     )
+
 
 # -------------------- DOWNLOAD ROUTE --------------------
 @app.route("/api/download/<int:file_id>", methods=['POST'])

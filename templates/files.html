@@ -823,7 +823,7 @@
             <div class="mb-4">
                 <input type="text" id="securityAnswer" class="form-input" placeholder="Enter access code" aria-label="Security answer">
             </div>
-            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-1 sm:space-x-4">
                 <button id="confirmDownload" class="btn flex-1 order-2 sm:order-1">
                     <i class="fas fa-download mr-2"></i> Download
                 </button>
@@ -835,7 +835,6 @@
     <script>
         // Global variables
         let currentFileId = null;
-    // let files = []; // No longer needed
         let refreshInterval = null;
         let countdownInterval = null;
         const isAdmin = "{{ 'true' if current_user.id == 1 else 'false' }}";
