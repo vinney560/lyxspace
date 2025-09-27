@@ -305,10 +305,11 @@ def logout():
 @login_required
 def files():
     files_list = []
+    pdf_list = []
     if current_user.is_allowed:
         files_list = File.query.order_by(File.upload_date.desc()).all()
-    
-    return render_template("files.html", files=files_list, user_allowed=current_user.is_allowed)
+        pdf_list = FileStore.query.order_by(FileStore.upload_date.desc()).all()
+    return render_template("files.html", files=files_list, pdfs=pdf_list, user_allowed=current_user.is_allowed)
 
 #--------------------------------------------------------------------
 @app.route("/api/files")
@@ -348,21 +349,17 @@ def upload_file():
         unique_filename = f"{base}_{timestamp}{ext.lower()}"
 
         if ext.lower() == '.pdf':
-            save_folder = app.config['PDF_FOLDER']
-            save_path = os.path.join(save_folder, unique_filename)
-            file.save(save_path)
-            # Save to FileStore DB
-            pdf_data = file.read()
-            new_pdf = FileStore(
-                filename=unique_filename,
-                data=pdf_data,
-                description=description,
-                uploader_id=current_user.id
-            )
-            db.session.add(new_pdf)
-            db.session.commit()
-            print(f"✅ PDF uploaded: {save_path}")
-            return jsonify({'message': 'PDF uploaded successfully', 'file_id': new_pdf.id}), 200
+                pdf_data = file.read()
+                new_pdf = FileStore(
+                    filename=unique_filename,
+                    data=pdf_data,
+                    description=description,
+                    uploader_id=current_user.id
+                )
+                db.session.add(new_pdf)
+                db.session.commit()
+                print(f"✅ PDF uploaded to DB: {unique_filename}")
+                return jsonify({'message': 'PDF uploaded successfully', 'file_id': new_pdf.id}), 200
         else:
             save_folder = app.config['IMAGE_FOLDER']
             save_path = os.path.join(save_folder, unique_filename)
@@ -1177,6 +1174,29 @@ def course_stats():
         flash(f"Error loading course statistics: {str(e)}", "error")
         return redirect(url_for('admin_panel'))
 #--------------------------------------------------------------------
+# Admin Stats Route: Show all DB tables
+@app.route("/admin/stats")
+@login_required
+@admin_required
+def admin_stats():
+    users = User.query.all()
+    files = File.query.all()
+    filestores = FileStore.query.all()
+    courses = Course.query.all()
+    modules = CourseModule.query.all()
+    enrollments = Enrollment.query.all()
+    progresses = UserProgress.query.all()
+    return render_template(
+        "admin_stats.html",
+        users=users,
+        files=files,
+        filestores=filestores,
+        courses=courses,
+        modules=modules,
+        enrollments=enrollments,
+        progresses=progresses
+    )
+#--------------------------------------------------------------------
 @app.route("/admin")
 @login_required
 @admin_required
@@ -1263,27 +1283,3 @@ with app.app_context():
 if __name__ == "__main__":
     app.debug=True
     app.run()
-
-#--------------------------------------------------------------------
-# Admin Stats Route: Show all DB tables
-@app.route("/admin/stats")
-@login_required
-@admin_required
-def admin_stats():
-    users = User.query.all()
-    files = File.query.all()
-    filestores = FileStore.query.all()
-    courses = Course.query.all()
-    modules = CourseModule.query.all()
-    enrollments = Enrollment.query.all()
-    progresses = UserProgress.query.all()
-    return render_template(
-        "admin_stats.html",
-        users=users,
-        files=files,
-        filestores=filestores,
-        courses=courses,
-        modules=modules,
-        enrollments=enrollments,
-        progresses=progresses
-    )

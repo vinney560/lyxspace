@@ -698,12 +698,63 @@
             {% endif %}
 
             <section>
-                <h2 class="text-xl sm:text-2xl font-bold gradient-text mb-4 sm:mb-6">Available Files <span class="text-sm font-normal text-blue-400" id="fileCount"></span></h2>
+                <h2 class="text-xl sm:text-2xl font-bold gradient-text mb-4 sm:mb-6">Available Files <span class="text-sm font-normal text-blue-400">({{ files|length + pdfs|length }} files)</span></h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="filesGrid">
-                    <div class="glass-morph p-6 sm:p-8 rounded-2xl text-center col-span-full">
-                        <div class="spinner mb-3 mx-auto"></div>
-                        <p class="text-gray-400 text-sm sm:text-base">Loading files...</p>
-                    </div>
+                    {% if files|length == 0 and pdfs|length == 0 %}
+                        <div class="glass-morph p-6 sm:p-8 rounded-2xl text-center col-span-full">
+                            <i class="fas fa-folder-open text-2xl sm:text-3xl text-blue-400 mb-3 sm:mb-4"></i>
+                            <p class="text-gray-400 text-sm sm:text-base">No files available.{% if current_user.id == 1 %} Upload some files to get started.{% endif %}</p>
+                        </div>
+                    {% endif %}
+                    {% for file in files %}
+                        <div class="file-card animate__animated animate__fadeIn">
+                            <div class="file-preview">
+                                <img src="/api/file/{{ file.id }}" alt="{{ file.filename }}" loading="lazy">
+                            </div>
+                            <div class="p-4 flex flex-col flex-grow">
+                                <div class="file-name font-bold mb-2 truncate text-sm sm:text-base">{{ file.filename }}</div>
+                                <div class="file-description text-gray-400 text-xs sm:text-sm mb-3 line-clamp-2 flex-grow">{{ file.description or 'No description provided' }}</div>
+                                <div class="flex justify-between text-xs text-gray-500 mb-3">
+                                    <span>{{ file.upload_date.strftime('%Y-%m-%d') }}</span>
+                                    <span class="uppercase">image</span>
+                                </div>
+                                <div class="flex space-x-2 mt-auto">
+                                    <button class="btn btn-secondary flex-1 text-xs sm:text-sm" onclick="viewFile({{ file.id }}, 'image')">
+                                        <i class="fas fa-eye mr-1"></i> View
+                                    </button>
+                                    <button class="btn flex-1 text-xs sm:text-sm" onclick="requestDownload({{ file.id }})">
+                                        <i class="fas fa-download mr-1"></i> Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% for pdf in pdfs %}
+                        <div class="file-card animate__animated animate__fadeIn">
+                            <div class="file-preview">
+                                <div class="pdf-preview">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span class="text-sm sm:text-base">PDF Document</span>
+                                </div>
+                            </div>
+                            <div class="p-4 flex flex-col flex-grow">
+                                <div class="file-name font-bold mb-2 truncate text-sm sm:text-base">{{ pdf.filename }}</div>
+                                <div class="file-description text-gray-400 text-xs sm:text-sm mb-3 line-clamp-2 flex-grow">{{ pdf.description or 'No description provided' }}</div>
+                                <div class="flex justify-between text-xs text-gray-500 mb-3">
+                                    <span>{{ pdf.upload_date.strftime('%Y-%m-%d') }}</span>
+                                    <span class="uppercase">PDF</span>
+                                </div>
+                                <div class="flex space-x-2 mt-auto">
+                                    <button class="btn btn-secondary flex-1 text-xs sm:text-sm" onclick="viewFile({{ pdf.id }}, 'pdf')">
+                                        <i class="fas fa-eye mr-1"></i> View
+                                    </button>
+                                    <button class="btn flex-1 text-xs sm:text-sm" onclick="requestDownload({{ pdf.id }})">
+                                        <i class="fas fa-download mr-1"></i> Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </section>
         </div>
