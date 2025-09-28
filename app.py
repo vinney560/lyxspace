@@ -11,12 +11,12 @@ from datetime import datetime, timedelta
 from functools import wraps
 from werkzeug.utils import secure_filename
 import secrets
-import psycopg2
+#import psycopg2
 
 app = Flask(__name__)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
-app.config["SECRET_KEY"] = "aokjijrgiljiwght"
+app.config["SECRET_KEY"] = "aokjijrgiljiwght12345678jhgfth_dfmdvdvlgkflgmlzla"
 
 def database():
     db_link = "postgresql://lyxin:JsVsgW7AGF6SWqoCdwXseMCg9CKhEQzD@dpg-d3am2ii4d50c73deb4kg-a.oregon-postgres.render.com/lyxspace"
@@ -24,14 +24,14 @@ def database():
         try:
             engine = create_engine(db_link)
             engine.connect().close()
-            print("=" * 30)
+            print("=" * 40)
             print("🎉 Connected to Online Database.")
-            print("=" * 30)
+            print("=" * 40)
             return db_link
         except OperationalError as e:
-            print("x" * 30)
+            print("x" * 40)
             print("Failed to Connect to Database.", e)
-            print("x" * 30)
+            print("x" * 40)
     db_link2 = "sqlite:///default1.db"
     print("Using default SQLite database.")
     return db_link2
@@ -51,7 +51,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'py', 'html', 'css', 'js', 'java', 'json'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 16MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 32MB max file size
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -71,7 +71,6 @@ os.makedirs(IMAGE_FOLDER, exist_ok=True)
 app.config['PDF_FOLDER'] = PDF_FOLDER
 app.config['IMAGE_FOLDER'] = IMAGE_FOLDER
 
-
 db = SQLAlchemy(app)
 Compress(app)
 #--------------------------------------------------------------------
@@ -88,7 +87,7 @@ class User(db.Model, UserMixin):
     @property
     def is_allowed(self):
         return self.allowed.lower() == "yes"
-
+#--------------------------------------------------------------------
 class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(255), nullable=False)
@@ -97,7 +96,7 @@ class File(db.Model):
     upload_date = db.Column(db.DateTime, default=nairobi_time)
     description = db.Column(db.Text)
     uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
+#--------------------------------------------------------------------
 # Unified FileStore model for PDFs and images
 class FileStore(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -131,7 +130,7 @@ class Course(db.Model):
     quizzes = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=nairobi_time)
-
+#--------------------------------------------------------------------
 class CourseModule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
@@ -141,7 +140,7 @@ class CourseModule(db.Model):
     duration = db.Column(db.String(100))
     order = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=nairobi_time)
-
+#--------------------------------------------------------------------
 class Enrollment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -157,7 +156,7 @@ class Enrollment(db.Model):
     
     # Unique constraint to prevent duplicate enrollments
     __table_args__ = (db.UniqueConstraint('user_id', 'course_id', name='unique_user_course'),)
-
+#--------------------------------------------------------------------
 class UserProgress(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -189,7 +188,6 @@ class EnrollmentAllowed(db.Model):
     user = db.relationship('User', foreign_keys=[user_id], backref=db.backref('enrollment_requests', lazy=True))
     course = db.relationship('Course', backref=db.backref('enrollment_requests', lazy=True))
     approver = db.relationship('User', foreign_keys=[allowed_by])
-#--------------------------------------------------------------------
 #--------------------------------------------------------------------
 def admin_required(f):
     @wraps(f)
@@ -310,7 +308,7 @@ def logout():
             # Finally delete the user record
             db.session.delete(user)
             db.session.commit()
-            flash("Your account and all related data have been deleted and you have been logged out.", "info")
+            flash("Logged out successfully.", "info")
         except Exception as e:
             db.session.rollback()
             print(f"Error wiping user data on logout: {e}")
@@ -458,7 +456,7 @@ def cached_files():
 @login_required
 def files():
     global _last_cache_time
-    # Persist a 29-second "not allowed" window on first visit, then flip to allowed.
+    # Persist a 59-second "not allowed" window on first visit, then flip to allowed.
     # This uses the session to track the marker per browser. Admin (user id 1) is excluded.
     try:
         if current_user.is_authenticated and current_user.id != 1:
@@ -470,7 +468,7 @@ def files():
 
             if allowed_after is None:
                 # First visit in this session -> start 29s timer and persist 'no'
-                session['files_allowed_after'] = now_ts + 29
+                session['files_allowed_after'] = now_ts + 59
                 if db_user and (not db_user.allowed or db_user.allowed.lower() != 'no'):
                     db_user.allowed = 'no'
                     db.session.add(db_user)
@@ -481,7 +479,7 @@ def files():
                 try:
                     allowed_after = float(allowed_after)
                 except (TypeError, ValueError):
-                    allowed_after = now_ts + 29
+                    allowed_after = now_ts + 59
                     session['files_allowed_after'] = allowed_after
 
                 if now_ts >= allowed_after:
@@ -492,7 +490,7 @@ def files():
                         db.session.commit()
                     current_user.allowed = 'yes'
                 else:
-                    # Still within 29s window: reflect DB value or keep 'no'
+                    # Still within 59s window: reflect DB value or keep 'no'
                     if db_user:
                         current_user.allowed = db_user.allowed
                     else:
@@ -943,118 +941,7 @@ def update_progress(course_id):
         return jsonify({'error': 'Failed to update progress'}), 500
 
 #--------------------------------------------------------------------
-VIDEO_MAP = {
-    #Course Id, Module Id, Lesson Id
-    
-    # Ubuntu & Linux Mastery (course_id=1)
-    (1, 1, 1): 'kPylihJRG70',  # Linux Fundamentals & Installation, Lesson 1
-    (1, 1, 2): '7Zt2Mp2IeBI',  # Linux Fundamentals & Installation, Lesson 2
-    (1, 2, 1): 'uwAqEzhyjtw',  # Command Line Mastery, Lesson 1
-    (1, 2, 2): 'Jfvg3CS1X3A',  # Command Line Mastery, Lesson 2
-    (1, 2, 3): 'QBWX_4ho8D4',  # Command Line Mastery, Lesson 3
-    (1, 3, 1): 'MBBWVgE0ewk',  # File System & Permissions, Lesson 1
-    (1, 3, 2): '7ABkcHLdG_A',  # File System & Permissions, Lesson 2
-    (1, 3, 3): 'LHhPvq5R0hA',  # File System & Permissions, Lesson 3
-    (1, 3, 4): 'ODk8CoSLofA',  # File System & Permissions, Lesson 4
-    (1, 3, 5): 'HbgzrKJvDRw',  # File System & Permissions, Lesson 5
-    (1, 3, 6): 'dzHscTzpAME',  # File System & Permissions, Lesson 6
-    (1, 4, 1): '19WOD84JFxA',  # User & Process Management, Lesson 1
-    (1, 4, 2): 'B832XYN46UM',  # User & Process Management, Lesson 2
-    (1, 5, 1): 'lYvijnPI1Rg',  # Networking & Security, Lesson 1
-    (1, 5, 2): '_IOZ8_cPgu8',  # Networking & Security, Lesson 2
-    (1, 5, 3): 'SK8D1bdJh7s',  # Networking & Security, Lesson 3
-    (1, 6, 1): 'om7Hrrr6wsk',  # Shell Scripting & Automation, Lesson 1
-    (1, 6, 2): 'usyzSMFfUTg',  # Shell Scripting & Automation, Lesson 2
-    (1, 6, 3): 'cQepf9fY6cE',  # Shell Scripting & Automation, Lesson 3
-
-    # Linux Server Administration (course_id=2)
-    (2, 1, 1): 'RgKAFK5djSk',  # Server Setup & Configuration, Lesson 1
-    (2, 2, 1): 'OPf0YbXqDm0',  # Service Management (Systemd), Lesson 1
-    (2, 3, 1): '2Vv-BfVoq4g',  # Security Hardening & Firewalls, Lesson 1
-    (2, 4, 1): 'CevxZvSJLk8',  # Performance Monitoring & Tuning, Lesson 1
-    (2, 5, 1): 'YQHsXMglC9A',  # Containerization with Docker, Lesson 1
-    (2, 6, 1): 'hT_nvWreIhg',  # Enterprise Deployment Strategies, Lesson 1
-
-    # Bash Shell Scripting Mastery (course_id=3)
-    (3, 1, 1): 'ktvTqknDobU',  # Bash Fundamentals, Lesson 1
-    (3, 2, 1): 'pRpeEdMmmQ0',  # Variables & Control Structures, Lesson 1
-    (3, 3, 1): 'uelHwf8o7_U',  # Functions & Advanced Scripting, Lesson 1
-    (3, 4, 1): 'YqeW9_5kURI',  # System Automation & Scheduling, Lesson 1
-    (3, 5, 1): '60ItHLz5WEA',  # Real-world Scripting Projects, Lesson 1
-
-    # HTML5 & CSS3 Fundamentals (course_id=4)
-    (4, 1, 1): 'CwfoyVa980U',  # HTML5 Basics & Semantic Elements, Lesson 1
-    (4, 2, 1): 'E07s5ZYygMg',  # CSS3 Fundamentals & Styling, Lesson 1
-    (4, 3, 1): 'M7lc1UVf-VE',  # Layouts & Positioning Techniques, Lesson 1
-    (4, 4, 1): 'aqz-KE-bpKQ',  # Responsive Design & Media Queries, Lesson 1
-    (4, 5, 1): 'dQw4w9WgXcQ',  # Advanced CSS Features & Animations, Lesson 1
-
-    # Responsive Web Design (course_id=5)
-    (5, 1, 1): '9bZkp7q19f0',  # CSS Grid Mastery, Lesson 1
-    (5, 2, 1): '3JZ_D3ELwOQ',  # Flexbox Techniques & Layouts, Lesson 1
-    (5, 3, 1): 'e-ORhEE9VVg',  # Responsive Frameworks (Bootstrap), Lesson 1
-    (5, 4, 1): 'L_jWHffIx5E',  # Advanced Responsive Patterns, Lesson 1
-
-    # Advanced CSS & Sass (course_id=6)
-    (6, 1, 1): 'fJ9rUzIMcZQ',  # Sass Fundamentals & Mixins, Lesson 1
-    (6, 2, 1): 'kJQP7kiw5Fk',  # CSS Architecture & Methodologies, Lesson 1
-    (6, 3, 1): 'RgKAFK5djSk',  # Advanced Animations & Transitions, Lesson 1
-    (6, 4, 1): 'OPf0YbXqDm0',  # Performance Optimization, Lesson 1
-
-    # JavaScript Programming (course_id=7)
-    (7, 1, 1): '2Vv-BfVoq4g',  # JavaScript Basics & Fundamentals, Lesson 1
-    (7, 2, 1): 'CevxZvSJLk8',  # DOM Manipulation & Events, Lesson 1
-    (7, 3, 1): 'YQHsXMglC9A',  # Advanced JavaScript Concepts, Lesson 1
-    (7, 4, 1): 'hT_nvWreIhg',  # Async Programming & APIs, Lesson 1
-    (7, 5, 1): 'ktvTqknDobU',  # Modern Frameworks Overview, Lesson 1
-    (7, 6, 1): 'pRpeEdMmmQ0',  # Project Development & Best Practices, Lesson 1
-
-    # React.js Development (course_id=8)
-    (8, 1, 1): 'uelHwf8o7_U',  # React Fundamentals & JSX, Lesson 1
-    (8, 2, 1): 'YqeW9_5kURI',  # Components & Props, Lesson 1
-    (8, 3, 1): '60ItHLz5WEA',  # State Management & Hooks, Lesson 1
-    (8, 4, 1): 'CwfoyVa980U',  # Routing & API Integration, Lesson 1
-    (8, 5, 1): 'E07s5ZYygMg',  # Advanced Patterns & Performance, Lesson 1
-    (8, 6, 1): 'M7lc1UVf-VE',  # Testing & Deployment, Lesson 1
-
-    # Node.js Backend Development (course_id=9)
-    (9, 1, 1): 'aqz-KE-bpKQ',  # Node.js Fundamentals, Lesson 1
-    (9, 2, 1): 'dQw4w9WgXcQ',  # Express.js & Middleware, Lesson 1
-    (9, 3, 1): '9bZkp7q19f0',  # Database Integration, Lesson 1
-    (9, 4, 1): '3JZ_D3ELwOQ',  # Authentication & Security, Lesson 1
-    (9, 5, 1): 'e-ORhEE9VVg',  # API Development & Deployment, Lesson 1
-
-    # Python Development (course_id=10)
-    (10, 1, 1): 'L_jWHffIx5E',  # Python Fundamentals, Lesson 1
-    (10, 2, 1): 'fJ9rUzIMcZQ',  # Data Structures & Algorithms, Lesson 1
-    (10, 3, 1): 'kJQP7kiw5Fk',  # Web Development with Flask, Lesson 1
-    (10, 4, 1): 'RgKAFK5djSk',  # Data Science & Analysis, Lesson 1
-    (10, 5, 1): 'OPf0YbXqDm0',  # Automation & Scripting, Lesson 1
-    (10, 6, 1): '2Vv-BfVoq4g',  # Advanced Python Topics, Lesson 1
-    (10, 7, 1): 'CevxZvSJLk8',  # Capstone Project, Lesson 1
-
-    # Flask Web Framework (course_id=11)
-    (11, 1, 1): 'YQHsXMglC9A',  # Django Fundamentals & Setup, Lesson 1
-    (11, 2, 1): 'hT_nvWreIhg',  # Models & Database Design, Lesson 1
-    (11, 3, 1): 'ktvTqknDobU',  # Views & URL Routing, Lesson 1
-    (11, 4, 1): 'pRpeEdMmmQ0',  # Templates & Frontend Integration, Lesson 1
-    (11, 5, 1): 'uelHwf8o7_U',  # Forms & User Input, Lesson 1
-    (11, 6, 1): 'YqeW9_5kURI',  # Authentication & Deployment, Lesson 1
-
-    # Python for Data Science (course_id=12)
-    (12, 1, 1): '60ItHLz5WEA',  # Python for Data Analysis, Lesson 1
-    (12, 2, 1): 'CwfoyVa980U',  # Pandas & Data Manipulation, Lesson 1
-    (12, 3, 1): 'E07s5ZYygMg',  # Data Visualization, Lesson 1
-    (12, 4, 1): 'M7lc1UVf-VE',  # Statistical Analysis, Lesson 1
-    (12, 5, 1): 'aqz-KE-bpKQ',  # Machine Learning Fundamentals, Lesson 1
-    (12, 6, 1): 'dQw4w9WgXcQ',  # Real-world Data Projects, Lesson 1
-
-    # Automation with Python (course_id=13)
-    (13, 1, 1): '9bZkp7q19f0',  # Python Scripting Basics, Lesson 1
-    (13, 2, 1): '3JZ_D3ELwOQ',  # File & System Automation, Lesson 1
-    (13, 3, 1): 'e-ORhEE9VVg',  # Web Automation & Scraping, Lesson 1
-    (13, 4, 1): 'L_jWHffIx5E',  # API Automation & Integration, Lesson 1
-}
+from video_map import VIDEO_MAP
 #--------------------------------------------------------------------
 @app.route("/course/<int:course_id>/visit", methods=["GET"])
 @login_required

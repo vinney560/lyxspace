@@ -1001,7 +1001,7 @@
                         </form>
                     </div>
                     {% else %}
-                    <form action="{{ url_for('enroll_course', course_id=course.id) }}" method="POST">
+                    <form action="{{ url_for('enroll_course', course_id=course.id, price=course.price) }}" method="POST">
                         <button type="submit" class="btn pulse w-full text-center mb-3">
                             <i class="fas fa-play-circle mr-2"></i> Enroll Now
                         </button>
@@ -1108,7 +1108,7 @@
             }
         }
 
-        // Initialize progress bars with random values (for demo)
+        // Initialize progress bars with random values
         document.addEventListener('DOMContentLoaded', function() {
             const progressBars = document.querySelectorAll('.progress-fill');
             progressBars.forEach(bar => {
