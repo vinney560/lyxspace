@@ -422,6 +422,7 @@ def cached_files():
 @app.route("/files")
 @login_required
 def files():
+    global _last_cache_time
     # Persist a 29-second "not allowed" window on first visit, then flip to allowed.
     # This uses the session to track the marker per browser. Admin (user id 1) is excluded.
     try:
