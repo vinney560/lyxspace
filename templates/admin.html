@@ -131,10 +131,24 @@
         border: 1px solid rgba(245, 158, 11, 0.3);
     }
     
+    /* Constrain table layout and prevent stretching on ultra-wide screens */
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        background: transparent;
+        border-radius: 8px;
+        padding-bottom: 8px;
+    }
+
     table {
         width: 100%;
+        max-width: 1200px; /* keep tables from stretching too wide */
         border-collapse: collapse;
         margin-top: 15px;
+        table-layout: auto;
+        margin-left: auto;
+        margin-right: auto;
     }
     
     th, td {
@@ -183,16 +197,19 @@
                 <span class="text-xl font-bold gradient-text">LyxSpace Admin</span>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="{{ url_for('files') }}" class="btn">
+                <a href="{{ url_for('files') }}" class="btn" title="Files">
                     <i class="fas fa-folder mr-2"></i>
                 </a>
-                <a href="{{ url_for('course_stats') }}" class="btn">
+                <a href="{{ url_for('course_stats') }}" class="btn" title="Course Stats">
                     <i class="fas fa-chart-line mr-2"></i>
                 </a>
-                <a href="{{ url_for('admin_stats') }}" class="btn">
+                <a href="{{ url_for('admin_stats') }}" class="btn" title="DB Stats">
                     <i class="fas fa-table mr-2"></i>
                 </a>
-                <a href="{{ url_for('logout') }}" class="btn btn-danger">
+                <a href="{{ url_for('admin_enrollment_requests') }}" class="btn" title="Enrollment Requests">
+                    <i class="fas fa-user-check mr-2"></i>
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger" title="Logout">
                     <i class="fas fa-sign-out-alt mr-2"></i>
                 </a>
             </div>
@@ -217,7 +234,7 @@
             </h2>
             
             {% if users %}
-            <div class="overflow-x-auto">
+            <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
@@ -281,7 +298,7 @@
             </h2>
             
             {% if files %}
-            <div class="overflow-x-auto">
+            <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>

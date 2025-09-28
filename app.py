@@ -175,6 +175,22 @@ class UserProgress(db.Model):
     course = db.relationship('Course', backref=db.backref('progress', lazy=True))
     module = db.relationship('CourseModule', backref=db.backref('progress', lazy=True))
 #--------------------------------------------------------------------
+# Pending enrollment approvals model - admins must approve before creating real Enrollment
+class EnrollmentAllowed(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    price = db.Column(db.Float, default=0.0)
+    allowed = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=nairobi_time)
+    allowed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    allowed_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship('User', foreign_keys=[user_id], backref=db.backref('enrollment_requests', lazy=True))
+    course = db.relationship('Course', backref=db.backref('enrollment_requests', lazy=True))
+    approver = db.relationship('User', foreign_keys=[allowed_by])
+#--------------------------------------------------------------------
+#--------------------------------------------------------------------
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -183,6 +199,32 @@ def admin_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
+
+
+def enrollment_allowed_required(f):
+    """Decorator: ensures the current_user has an approved EnrollmentAllowed for the course_id kwarg or query param."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # determine course_id from kwargs or query params
+        course_id = kwargs.get('course_id') or (request.view_args.get('course_id') if request.view_args else None)
+        if not course_id:
+            course_id = request.args.get('course_id', type=int)
+
+        if not current_user.is_authenticated:
+            return redirect(url_for('login', next=request.url))
+
+        # Admins bypass the check
+        if current_user.id == 1:
+            return f(*args, **kwargs)
+
+        # Check approved EnrollmentAllowed
+        req = EnrollmentAllowed.query.filter_by(user_id=current_user.id, course_id=course_id, allowed=True).first()
+        if not req:
+            flash('Your enrollment for this course is pending admin approval. Please wait.', 'warning')
+            return redirect(url_for('course_detail', course_id=course_id))
+
+        return f(*args, **kwargs)
+    return decorated
 
 def protect_file(f):
         @wraps(f)
@@ -647,34 +689,52 @@ def enroll_course(course_id):
         if not course:
             flash("Course not found or no longer available.", "error")
             return redirect(url_for('courses'))
-        
         # Check if user is already enrolled
         existing_enrollment = Enrollment.query.filter_by(
-            user_id=current_user.id, 
+            user_id=current_user.id,
             course_id=course_id
         ).first()
-        
+
         if existing_enrollment:
             if existing_enrollment.is_active:
                 flash(f"You are already enrolled in '{course.title}'.", "info")
+                return redirect(url_for('course_detail', course_id=course_id))
             else:
                 # Reactivate existing enrollment
                 existing_enrollment.is_active = True
                 existing_enrollment.enrolled_at = nairobi_time()
                 db.session.commit()
                 flash(f"Welcome back to '{course.title}'! Your enrollment has been reactivated.", "success")
-        else:
-            # Create new enrollment
-            enrollment = Enrollment(
-                user_id=current_user.id,
-                course_id=course_id,
-                enrolled_at=nairobi_time(),
-                progress=0.0,
-                is_active=True
-            )
-            db.session.add(enrollment)
-            db.session.commit()
-            flash(f"Successfully enrolled in '{course.title}'! Start your learning journey now.", "success")
+                return redirect(url_for('course_detail', course_id=course_id))
+
+        # Check for an existing pending approval request
+        pending = EnrollmentAllowed.query.filter_by(user_id=current_user.id, course_id=course_id).first()
+        if pending:
+            if pending.allowed:
+                # Admin already approved -> create real enrollment
+                enrollment = Enrollment(
+                    user_id=current_user.id,
+                    course_id=course_id,
+                    enrolled_at=nairobi_time(),
+                    progress=0.0,
+                    is_active=True
+                )
+                db.session.add(enrollment)
+                # remove the pending request
+                db.session.delete(pending)
+                db.session.commit()
+                flash(f"Your enrollment for '{course.title}' has been approved and activated.", "success")
+                return redirect(url_for('course_detail', course_id=course_id))
+            else:
+                flash('Your enrollment request is pending admin approval.', 'info')
+                return redirect(url_for('course_detail', course_id=course_id))
+
+        # Create a new pending enrollment approval record
+        price = float(request.form.get('price', 0.0)) if request.form.get('price') else 0.0
+        req = EnrollmentAllowed(user_id=current_user.id, course_id=course_id, price=price, allowed=False)
+        db.session.add(req)
+        db.session.commit()
+        flash('Enrollment request submitted. Awaiting admin approval.', 'success')
         
         return redirect(url_for('course_detail', course_id=course_id))
         
@@ -1477,6 +1537,36 @@ def admin_panel():
     users = User.query.filter(User.id != 1).all()  # Exclude admin
     files = FileStore.query.all()
     return render_template("admin.html", users=users, files=files)
+
+
+@app.route('/admin/enrollment-requests')
+@login_required
+@admin_required
+def admin_enrollment_requests():
+    # Show pending enrollment approval requests
+    pending = EnrollmentAllowed.query.filter_by(allowed=False).order_by(EnrollmentAllowed.created_at.desc()).all()
+    return render_template('admin_enrollment_requests.html', pending=pending)
+
+
+@app.route('/admin/approve-enrollment/<int:request_id>', methods=['POST'])
+@login_required
+@admin_required
+def admin_approve_enrollment(request_id):
+    req = EnrollmentAllowed.query.get_or_404(request_id)
+    try:
+        # mark as allowed and record approver
+        req.allowed = True
+        req.allowed_by = current_user.id
+        req.allowed_at = nairobi_time()
+        db.session.add(req)
+        db.session.commit()
+
+        flash('Enrollment request approved.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error approving enrollment request.', 'error')
+        print(f'Error approving enrollment request: {e}')
+    return redirect(url_for('admin_enrollment_requests'))
 
 #--------------------------------------------------------------------
 @app.route("/admin/allow_user/<int:user_id>", methods=['POST'])

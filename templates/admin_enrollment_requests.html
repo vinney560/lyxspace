@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Pending Enrollment Requests | LyxSpace Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="max-w-6xl mx-auto p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold">Pending Enrollment Requests</h1>
+            <a href="{{ url_for('admin_panel') }}" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded inline-flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Admin Panel
+            </a>
+        </div>
+
+        {% if pending and pending|length > 0 %}
+        <div class="space-y-4">
+            {% for r in pending %}
+            <div class="bg-gray-800 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div class="mb-3 sm:mb-0">
+                    <div class="text-sm text-gray-400">Request ID: <span class="text-gray-200 font-semibold">{{ r.id }}</span></div>
+                    <div class="text-lg font-semibold">{{ r.course.title if r.course else ('Course #' ~ r.course_id) }}</div>
+                    <div class="text-sm text-gray-400">User: <span class="text-gray-200">{{ r.user.username or r.user.mobile }}</span></div>
+                    <div class="text-sm text-gray-400">Price: <span class="text-gray-200">{{ '$' ~ ('%.2f'|format(r.price or 0.0)) }}</span></div>
+                    <div class="text-xs text-gray-500">Requested: {{ r.created_at.strftime('%Y-%m-%d %H:%M:%S') if r.created_at else '' }}</div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <form method="post" action="{{ url_for('admin_approve_enrollment', request_id=r.id) }}">
+                        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Approve</button>
+                    </form>
+                    <form method="post" action="{{ url_for('admin_enrollment_requests') }}" onsubmit="return confirm('Are you sure you want to delete this request?');">
+                        <input type="hidden" name="delete_id" value="{{ r.id }}">
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-gray-800 p-6 rounded-lg text-center">
+            <p class="text-gray-300">No pending enrollment requests.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</body>
+</html>
