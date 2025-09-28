@@ -1029,14 +1029,23 @@ def visit_course(course_id):
     module_obj = next((m for m in modules if m.id == module_id), None)
     module_lessons = (module_obj.lessons or 1) if module_obj else 1
 
+    # Map DB module.id to a 1-based module index used by VIDEO_MAP keys.
+    # VIDEO_MAP uses small numeric module indices (1..N) not the DB primary key.
+    module_index = 1
+    if modules:
+        for idx, m in enumerate(modules):
+            if m.id == module_id:
+                module_index = idx + 1
+                break
+
     lesson_id = request.args.get('lesson_id', type=int) or 1
     if lesson_id < 1:
         lesson_id = 1
     if module_lessons and lesson_id > module_lessons:
         lesson_id = module_lessons
 
-    # Build list of available lesson numbers for this course/module
-    available_lessons = sorted([k[2] for k in VIDEO_MAP.keys() if k[0] == course_id and k[1] == module_id])
+    # Build list of available lesson numbers for this course/module (use module_index)
+    available_lessons = sorted([k[2] for k in VIDEO_MAP.keys() if k[0] == course_id and k[1] == module_index])
     
     if available_lessons:
         # Determine lesson to show:
@@ -1049,12 +1058,14 @@ def visit_course(course_id):
             next_index = (last_index + 1) % len(available_lessons)
             session[sess_key] = next_index
             chosen_lesson = available_lessons[next_index]
-    
-        video_id = VIDEO_MAP.get((course_id, module_id, chosen_lesson))
+        # Ensure the lesson_id reflects the actual chosen lesson so progress tracking matches the displayed video
+        lesson_id = chosen_lesson
+
+        video_id = VIDEO_MAP.get((course_id, module_index, chosen_lesson))
     else:
-        # fallback to earlier behavior
-        video_id = VIDEO_MAP.get((course_id, module_id, lesson_id)) \
-                   or VIDEO_MAP.get((course_id, module_id, 1)) \
+        # fallback to any video for this course/module or first available
+        video_id = VIDEO_MAP.get((course_id, module_index, lesson_id)) \
+                   or VIDEO_MAP.get((course_id, module_index, 1)) \
                    or next(iter(VIDEO_MAP.values()), None)
 
     if enrollment:
