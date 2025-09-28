@@ -909,14 +909,28 @@ def update_progress(course_id):
 
 #--------------------------------------------------------------------
 VIDEO_MAP = {
+    #Course Id, Module Id, Lesson Id
+    
     # Ubuntu & Linux Mastery (course_id=1)
-    (1, 1, 1): 'dQw4w9WgXcQ',  # Linux Fundamentals & Installation, Lesson 1
-    (1, 1, 2): '9bZkp7q19f0',
-    (1, 2, 1): '3JZ_D3ELwOQ',  # Command Line Mastery, Lesson 1
-    (1, 3, 1): 'e-ORhEE9VVg',  # File System & Permissions, Lesson 1
-    (1, 4, 1): 'L_jWHffIx5E',  # User & Process Management, Lesson 1
-    (1, 5, 1): 'fJ9rUzIMcZQ',  # Networking & Security, Lesson 1
-    (1, 6, 1): 'kJQP7kiw5Fk',  # Shell Scripting & Automation, Lesson 1
+    (1, 1, 1): 'kPylihJRG70',  # Linux Fundamentals & Installation, Lesson 1
+    (1, 1, 2): '7Zt2Mp2IeBI',  # Linux Fundamentals & Installation, Lesson 2
+    (1, 2, 1): 'uwAqEzhyjtw',  # Command Line Mastery, Lesson 1
+    (1, 2, 2): 'Jfvg3CS1X3A',  # Command Line Mastery, Lesson 2
+    (1, 2, 3): 'QBWX_4ho8D4',  # Command Line Mastery, Lesson 3
+    (1, 3, 1): 'MBBWVgE0ewk',  # File System & Permissions, Lesson 1
+    (1, 3, 2): '7ABkcHLdG_A',  # File System & Permissions, Lesson 2
+    (1, 3, 3): 'LHhPvq5R0hA',  # File System & Permissions, Lesson 3
+    (1, 3, 4): 'ODk8CoSLofA',  # File System & Permissions, Lesson 4
+    (1, 3, 5): 'HbgzrKJvDRw',  # File System & Permissions, Lesson 5
+    (1, 3, 6): 'dzHscTzpAME',  # File System & Permissions, Lesson 6
+    (1, 4, 1): '19WOD84JFxA',  # User & Process Management, Lesson 1
+    (1, 4, 2): 'B832XYN46UM',  # User & Process Management, Lesson 2
+    (1, 5, 1): 'lYvijnPI1Rg',  # Networking & Security, Lesson 1
+    (1, 5, 2): '_IOZ8_cPgu8',  # Networking & Security, Lesson 2
+    (1, 5, 3): 'SK8D1bdJh7s',  # Networking & Security, Lesson 3
+    (1, 6, 1): 'om7Hrrr6wsk',  # Shell Scripting & Automation, Lesson 1
+    (1, 6, 2): 'usyzSMFfUTg',  # Shell Scripting & Automation, Lesson 2
+    (1, 6, 3): 'cQepf9fY6cE',  # Shell Scripting & Automation, Lesson 3
 
     # Linux Server Administration (course_id=2)
     (2, 1, 1): 'RgKAFK5djSk',  # Server Setup & Configuration, Lesson 1
@@ -1131,7 +1145,7 @@ def seed_courses():
                 'icon': 'fas fa-terminal',
                 'level': 'Beginner to Advanced',
                 'duration': '6 weeks',
-                'lessons': 24,
+                'lessons': 22,
                 'projects': 5,
                 'category': 'System Administration',
                 'color': 'from-green-500 to-emerald-600',
@@ -1141,7 +1155,7 @@ def seed_courses():
                 'resources': 15,
                 'quizzes': 6,
                 'modules': [
-                    {'title': 'Linux Fundamentals & Installation', 'lessons': 4, 'duration': '1 week', 'order': 1},
+                    {'title': 'Linux Fundamentals & Installation', 'lessons': 2, 'duration': '1 week', 'order': 1},
                     {'title': 'Command Line Mastery', 'lessons': 5, 'duration': '1.5 weeks', 'order': 2},
                     {'title': 'File System & Permissions', 'lessons': 4, 'duration': '1 week', 'order': 3},
                     {'title': 'User & Process Management', 'lessons': 3, 'duration': '1 week', 'order': 4},
