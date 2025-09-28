@@ -671,7 +671,16 @@ def course_detail(course_id):
         # pprint.pprint(course_data)
         # print("=== END DEBUG ===\n")
 
-        return render_template("course_detail.html", course=course_data)
+        # Check if the current user has a pending enrollment approval for this course
+        pending_req = EnrollmentAllowed.query.filter_by(user_id=current_user.id, course_id=course_id).first()
+        enrollment_pending = bool(pending_req)
+
+        return render_template(
+            "course_detail.html",
+            course=course_data,
+            enrollment_pending=enrollment_pending,
+            pending=pending_req
+        )
 
     except Exception as e:
         flash("Course not found or error loading course details.", "error")
@@ -712,7 +721,7 @@ def enroll_course(course_id):
         pending = EnrollmentAllowed.query.filter_by(user_id=current_user.id, course_id=course_id).first()
         if pending:
             if pending.allowed:
-                # Admin already approved -> create real enrollment
+                # Admin already approved
                 enrollment = Enrollment(
                     user_id=current_user.id,
                     course_id=course_id,
@@ -1026,15 +1035,32 @@ def visit_course(course_id):
     if module_lessons and lesson_id > module_lessons:
         lesson_id = module_lessons
 
-    # Select YouTube video id
-    video_id = VIDEO_MAP.get((course_id, module_id, lesson_id)) \
-               or VIDEO_MAP.get((course_id, module_id, 1)) \
-               or next(iter(VIDEO_MAP.values()), None)
+    # Build list of available lesson numbers for this course/module
+    available_lessons = sorted([k[2] for k in VIDEO_MAP.keys() if k[0] == course_id and k[1] == module_id])
+    
+    if available_lessons:
+        # Determine lesson to show:
+        # Use explicit lesson_id if passed and exists, otherwise rotate using session
+        if lesson_id and lesson_id in available_lessons:
+            chosen_lesson = lesson_id
+        else:
+            sess_key = f'last_video_index_{course_id}_{module_id}'
+            last_index = session.get(sess_key, -1)
+            next_index = (last_index + 1) % len(available_lessons)
+            session[sess_key] = next_index
+            chosen_lesson = available_lessons[next_index]
+    
+        video_id = VIDEO_MAP.get((course_id, module_id, chosen_lesson))
+    else:
+        # fallback to earlier behavior
+        video_id = VIDEO_MAP.get((course_id, module_id, lesson_id)) \
+                   or VIDEO_MAP.get((course_id, module_id, 1)) \
+                   or next(iter(VIDEO_MAP.values()), None)
 
     if enrollment:
-        # increment overall progress by 10 (cap at 100) only if below 100
+        # increment overall progress by 5 (cap at 100) only if below 100
         if (enrollment.progress or 0.0) < 100.0:
-            enrollment.progress = min((enrollment.progress or 0.0) + 10.0, 100.0)
+            enrollment.progress = min((enrollment.progress or 0.0) + 5.0, 100.0)
             db.session.add(enrollment)
             db.session.commit()
         progress = enrollment.progress
@@ -1056,7 +1082,7 @@ def visit_course(course_id):
                 completed_at=None,
                 last_accessed=datetime.utcnow(),
                 time_spent=0,
-                score=0.0
+                score=0.45
             )
             db.session.add(user_progress)
             db.session.commit()
