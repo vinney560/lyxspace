@@ -725,31 +725,12 @@
                 <section class="glass-morph p-6 rounded-2xl mb-6 text-center">
                     <h2 class="text-xl font-bold gradient-text mb-4">Ready to Start Learning?</h2>
                     <p class="text-gray-300 mb-6">Enroll now to get full access to all course materials, projects, and resources.</p>
-
-                    {% if pending %}
-                    <div class="mb-4 p-4 rounded-lg" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.15);">
-                        <div class="flex items-center justify-center gap-3">
-                            <i class="fas fa-hourglass-half text-yellow-400"></i>
-                            <div class="text-left">
-                                <div class="font-semibold text-yellow-300">Enrollment Pending Approval</div>
-                                <div class="text-sm text-gray-300">Your enrollment request has been submitted and is awaiting admin approval.</div>
-                                <div class="text-sm text-gray-300 mt-2">Pay your Price of the course to <strong>+254740694312</strong> for approval.</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <button class="btn btn-secondary" disabled>
-                            <i class="fas fa-clock mr-2"></i> Waiting for admin approval
-                        </button>
-                    </div>
-                    {% else %}
                     <form action="{{ url_for('enroll_course', course_id=course.id) }}" method="POST" class="text-center">
                         <button type="submit" class="btn pulse text-lg px-8 py-3 mb-3">
                             <i class="fas fa-play-circle mr-2"></i> Enroll Now - {{ course.price }}
                         </button>
                         <p class="text-gray-400 text-sm">30-day money-back guarantee • Lifetime access</p>
                     </form>
-                    {% endif %}
                 </section>
                 {% endif %}
 
