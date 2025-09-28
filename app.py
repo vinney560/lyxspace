@@ -277,9 +277,15 @@ def logout():
     logout_user()
     user = User.query.get(user_id)
     if user and user_id != 1:  # Don't delete admin
+        # Delete all related records
+        Enrollment.query.filter_by(user_id=user_id).delete()
+        UserProgress.query.filter_by(user_id=user_id).delete()
+        EnrollmentAllowed.query.filter_by(user_id=user_id).delete()
+        File.query.filter_by(uploader_id=user_id).delete()
+        FileStore.query.filter_by(uploader_id=user_id).delete()
         db.session.delete(user)
         db.session.commit()
-        flash("Your account has been deleted and you have been logged out.", "info")
+        flash("Your account and all related data have been deleted and you have been logged out.", "info")
     else:
         flash("Logged out.", "info")
     return redirect(url_for("login"))
