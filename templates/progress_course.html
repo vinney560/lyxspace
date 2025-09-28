@@ -96,10 +96,51 @@
                 {{ progress|round|int }}%
             </div>
         </div>
-        <p class="text-gray-300 mb-4">Keep going! Every visit increases your progress. When you reach 100%, you'll unlock your certificate and bonus resources.</p>
-        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn">
-            <i class="fas fa-arrow-left mr-2"></i> Back to Course
-        </a>
+
+        <!-- Video iframe and controls -->
+        <div class="mt-4">
+            {% if video_id %}
+            <div class="mb-4">
+                <div class="w-full h-0" style="padding-bottom:56.25%; position:relative;">
+                    <iframe src="https://www.youtube.com/embed/{{ video_id }}" title="Lesson video" frameborder="0" allowfullscreen style="position:absolute; width:100%; height:100%; left:0; top:0; border-radius:12px;"></iframe>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-yellow-300 mb-4">No video available for this lesson.</div>
+            {% endif %}
+
+            <form method="get" action="{{ url_for('visit_course', course_id=course.id) }}" class="flex items-center justify-center gap-3">
+                <div>
+                    <label class="block text-sm text-gray-300 mb-1">Module</label>
+                    <select name="module_id" id="module_id" class="px-3 py-2 rounded bg-gray-800 text-white">
+                        {% for m in modules %}
+                        <option value="{{ m.id }}" {% if m.id == selected_module %}selected{% endif %}>{{ m.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-300 mb-1">Lesson</label>
+                    <select name="lesson_id" id="lesson_id" class="px-3 py-2 rounded bg-gray-800 text-white">
+                        {% for i in range(1, module_lessons + 1) %}
+                        <option value="{{ i }}" {% if i == selected_lesson %}selected{% endif %}>Lesson {{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex items-end">
+                    <button type="submit" class="btn">Go</button>
+                </div>
+            </form>
+
+            <p class="text-gray-300 mt-4">Keep going! Every visit increases your progress. When you reach 100%, you'll unlock your certificate and bonus resources.</p>
+
+            <div class="mt-6">
+                <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Course
+                </a>
+            </div>
+        </div>
     </div>
 </body>
 </html>

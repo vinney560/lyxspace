@@ -380,48 +380,7 @@ def cached_files():
 @app.route("/files")
 @login_required
 def files():
-    # Persist a 29-second "not allowed" window on first visit, then flip to allowed.
-    # This uses the session to track the marker per browser. Admin (user id 1) is excluded.
-    try:
-        if current_user.is_authenticated and current_user.id != 1:
-            now_ts = datetime.utcnow().timestamp()
-            allowed_after = session.get('files_allowed_after')
-
-            # Load the authoritative user object from DB before persisting changes
-            db_user = User.query.get(current_user.id)
-
-            if allowed_after is None:
-                # First visit in this session -> start 29s timer and persist 'no'
-                session['files_allowed_after'] = now_ts + 29
-                if db_user and (not db_user.allowed or db_user.allowed.lower() != 'no'):
-                    db_user.allowed = 'no'
-                    db.session.add(db_user)
-                    db.session.commit()
-                # Ensure the proxy reflects the change for this request
-                current_user.allowed = 'no'
-            else:
-                try:
-                    allowed_after = float(allowed_after)
-                except (TypeError, ValueError):
-                    allowed_after = now_ts + 29
-                    session['files_allowed_after'] = allowed_after
-
-                if now_ts >= allowed_after:
-                    # Timer expired -> persist 'yes'
-                    if db_user and (not db_user.allowed or db_user.allowed.lower() != 'yes'):
-                        db_user.allowed = 'yes'
-                        db.session.add(db_user)
-                        db.session.commit()
-                    current_user.allowed = 'yes'
-                else:
-                    # Still within 29s window: reflect DB value or keep 'no'
-                    if db_user:
-                        current_user.allowed = db_user.allowed
-                    else:
-                        current_user.allowed = 'no'
-    except Exception as e:
-        # If anything goes wrong with DB/session handling, log and continue so page still renders
-        print(f"Error handling files allowed timer: {e}")
+    global _last_cache_time
 
     # ✅ Check if cache is expired or never set
     if _last_cache_time is None or (datetime.utcnow() - _last_cache_time) > timedelta(seconds=CACHE_TTL):
@@ -439,7 +398,8 @@ def files():
         pdfs=pdf_list,
         codes=code_list,
         user_allowed=current_user.is_allowed
-    )    
+    )
+
 
 # -------------------- DOWNLOAD ROUTE --------------------
 @app.route("/api/download/<int:file_id>", methods=['POST'])
@@ -838,184 +798,87 @@ def update_progress(course_id):
         return jsonify({'error': 'Failed to update progress'}), 500
 
 #--------------------------------------------------------------------
-VIDEO_MAP = {
-    # Ubuntu & Linux Mastery (course_id=1)
-    (1, 1, 1): 'dQw4w9WgXcQ',  # Linux Fundamentals & Installation, Lesson 1
-    (1, 1, 2): '9bZkp7q19f0',
-    (1, 2, 1): '3JZ_D3ELwOQ',  # Command Line Mastery, Lesson 1
-    (1, 3, 1): 'e-ORhEE9VVg',  # File System & Permissions, Lesson 1
-    (1, 4, 1): 'L_jWHffIx5E',  # User & Process Management, Lesson 1
-    (1, 5, 1): 'fJ9rUzIMcZQ',  # Networking & Security, Lesson 1
-    (1, 6, 1): 'kJQP7kiw5Fk',  # Shell Scripting & Automation, Lesson 1
-
-    # Linux Server Administration (course_id=2)
-    (2, 1, 1): 'RgKAFK5djSk',  # Server Setup & Configuration, Lesson 1
-    (2, 2, 1): 'OPf0YbXqDm0',  # Service Management (Systemd), Lesson 1
-    (2, 3, 1): '2Vv-BfVoq4g',  # Security Hardening & Firewalls, Lesson 1
-    (2, 4, 1): 'CevxZvSJLk8',  # Performance Monitoring & Tuning, Lesson 1
-    (2, 5, 1): 'YQHsXMglC9A',  # Containerization with Docker, Lesson 1
-    (2, 6, 1): 'hT_nvWreIhg',  # Enterprise Deployment Strategies, Lesson 1
-
-    # Bash Shell Scripting Mastery (course_id=3)
-    (3, 1, 1): 'ktvTqknDobU',  # Bash Fundamentals, Lesson 1
-    (3, 2, 1): 'pRpeEdMmmQ0',  # Variables & Control Structures, Lesson 1
-    (3, 3, 1): 'uelHwf8o7_U',  # Functions & Advanced Scripting, Lesson 1
-    (3, 4, 1): 'YqeW9_5kURI',  # System Automation & Scheduling, Lesson 1
-    (3, 5, 1): '60ItHLz5WEA',  # Real-world Scripting Projects, Lesson 1
-
-    # HTML5 & CSS3 Fundamentals (course_id=4)
-    (4, 1, 1): 'CwfoyVa980U',  # HTML5 Basics & Semantic Elements, Lesson 1
-    (4, 2, 1): 'E07s5ZYygMg',  # CSS3 Fundamentals & Styling, Lesson 1
-    (4, 3, 1): 'M7lc1UVf-VE',  # Layouts & Positioning Techniques, Lesson 1
-    (4, 4, 1): 'aqz-KE-bpKQ',  # Responsive Design & Media Queries, Lesson 1
-    (4, 5, 1): 'dQw4w9WgXcQ',  # Advanced CSS Features & Animations, Lesson 1
-
-    # Responsive Web Design (course_id=5)
-    (5, 1, 1): '9bZkp7q19f0',  # CSS Grid Mastery, Lesson 1
-    (5, 2, 1): '3JZ_D3ELwOQ',  # Flexbox Techniques & Layouts, Lesson 1
-    (5, 3, 1): 'e-ORhEE9VVg',  # Responsive Frameworks (Bootstrap), Lesson 1
-    (5, 4, 1): 'L_jWHffIx5E',  # Advanced Responsive Patterns, Lesson 1
-
-    # Advanced CSS & Sass (course_id=6)
-    (6, 1, 1): 'fJ9rUzIMcZQ',  # Sass Fundamentals & Mixins, Lesson 1
-    (6, 2, 1): 'kJQP7kiw5Fk',  # CSS Architecture & Methodologies, Lesson 1
-    (6, 3, 1): 'RgKAFK5djSk',  # Advanced Animations & Transitions, Lesson 1
-    (6, 4, 1): 'OPf0YbXqDm0',  # Performance Optimization, Lesson 1
-
-    # JavaScript Programming (course_id=7)
-    (7, 1, 1): '2Vv-BfVoq4g',  # JavaScript Basics & Fundamentals, Lesson 1
-    (7, 2, 1): 'CevxZvSJLk8',  # DOM Manipulation & Events, Lesson 1
-    (7, 3, 1): 'YQHsXMglC9A',  # Advanced JavaScript Concepts, Lesson 1
-    (7, 4, 1): 'hT_nvWreIhg',  # Async Programming & APIs, Lesson 1
-    (7, 5, 1): 'ktvTqknDobU',  # Modern Frameworks Overview, Lesson 1
-    (7, 6, 1): 'pRpeEdMmmQ0',  # Project Development & Best Practices, Lesson 1
-
-    # React.js Development (course_id=8)
-    (8, 1, 1): 'uelHwf8o7_U',  # React Fundamentals & JSX, Lesson 1
-    (8, 2, 1): 'YqeW9_5kURI',  # Components & Props, Lesson 1
-    (8, 3, 1): '60ItHLz5WEA',  # State Management & Hooks, Lesson 1
-    (8, 4, 1): 'CwfoyVa980U',  # Routing & API Integration, Lesson 1
-    (8, 5, 1): 'E07s5ZYygMg',  # Advanced Patterns & Performance, Lesson 1
-    (8, 6, 1): 'M7lc1UVf-VE',  # Testing & Deployment, Lesson 1
-
-    # Node.js Backend Development (course_id=9)
-    (9, 1, 1): 'aqz-KE-bpKQ',  # Node.js Fundamentals, Lesson 1
-    (9, 2, 1): 'dQw4w9WgXcQ',  # Express.js & Middleware, Lesson 1
-    (9, 3, 1): '9bZkp7q19f0',  # Database Integration, Lesson 1
-    (9, 4, 1): '3JZ_D3ELwOQ',  # Authentication & Security, Lesson 1
-    (9, 5, 1): 'e-ORhEE9VVg',  # API Development & Deployment, Lesson 1
-
-    # Python Development (course_id=10)
-    (10, 1, 1): 'L_jWHffIx5E',  # Python Fundamentals, Lesson 1
-    (10, 2, 1): 'fJ9rUzIMcZQ',  # Data Structures & Algorithms, Lesson 1
-    (10, 3, 1): 'kJQP7kiw5Fk',  # Web Development with Flask, Lesson 1
-    (10, 4, 1): 'RgKAFK5djSk',  # Data Science & Analysis, Lesson 1
-    (10, 5, 1): 'OPf0YbXqDm0',  # Automation & Scripting, Lesson 1
-    (10, 6, 1): '2Vv-BfVoq4g',  # Advanced Python Topics, Lesson 1
-    (10, 7, 1): 'CevxZvSJLk8',  # Capstone Project, Lesson 1
-
-    # Flask Web Framework (course_id=11)
-    (11, 1, 1): 'YQHsXMglC9A',  # Django Fundamentals & Setup, Lesson 1
-    (11, 2, 1): 'hT_nvWreIhg',  # Models & Database Design, Lesson 1
-    (11, 3, 1): 'ktvTqknDobU',  # Views & URL Routing, Lesson 1
-    (11, 4, 1): 'pRpeEdMmmQ0',  # Templates & Frontend Integration, Lesson 1
-    (11, 5, 1): 'uelHwf8o7_U',  # Forms & User Input, Lesson 1
-    (11, 6, 1): 'YqeW9_5kURI',  # Authentication & Deployment, Lesson 1
-
-    # Python for Data Science (course_id=12)
-    (12, 1, 1): '60ItHLz5WEA',  # Python for Data Analysis, Lesson 1
-    (12, 2, 1): 'CwfoyVa980U',  # Pandas & Data Manipulation, Lesson 1
-    (12, 3, 1): 'E07s5ZYygMg',  # Data Visualization, Lesson 1
-    (12, 4, 1): 'M7lc1UVf-VE',  # Statistical Analysis, Lesson 1
-    (12, 5, 1): 'aqz-KE-bpKQ',  # Machine Learning Fundamentals, Lesson 1
-    (12, 6, 1): 'dQw4w9WgXcQ',  # Real-world Data Projects, Lesson 1
-
-    # Automation with Python (course_id=13)
-    (13, 1, 1): '9bZkp7q19f0',  # Python Scripting Basics, Lesson 1
-    (13, 2, 1): '3JZ_D3ELwOQ',  # File & System Automation, Lesson 1
-    (13, 3, 1): 'e-ORhEE9VVg',  # Web Automation & Scraping, Lesson 1
-    (13, 4, 1): 'L_jWHffIx5E',  # API Automation & Integration, Lesson 1
-}
-#--------------------------------------------------------------------
+# Route to update course progress when visited
 @app.route("/course/<int:course_id>/visit", methods=["GET"])
 @login_required
 def visit_course(course_id):
-    # Display course lessons as embedded YouTube video plus update progress
-    enrollment = Enrollment.query.filter_by(
-        user_id=current_user.id, course_id=course_id, is_active=True
-    ).first()
+    # Mark course as visited by updating progress and safely recording a visit
+    enrollment = Enrollment.query.filter_by(user_id=current_user.id, course_id=course_id, is_active=True).first()
     course = Course.query.get(course_id)
 
-    # Load modules for the course to populate dropdowns
-    modules = CourseModule.query.filter_by(course_id=course_id).order_by(CourseModule.order).all()
-    first_module = modules[0] if modules else None
+    # Safe default: first module id or 1
+    first_module = CourseModule.query.filter_by(course_id=course_id).order_by(CourseModule.order).first()
     safe_module_id = first_module.id if first_module else 1
 
-    # Read module and lesson from query params
-    module_id = request.args.get('module_id', type=int) or safe_module_id
-    if modules and not any(m.id == module_id for m in modules):
-        module_id = safe_module_id
-
-    module_obj = next((m for m in modules if m.id == module_id), None)
-    module_lessons = (module_obj.lessons or 1) if module_obj else 1
-
-    lesson_id = request.args.get('lesson_id', type=int) or 1
-    if lesson_id < 1:
-        lesson_id = 1
-    if module_lessons and lesson_id > module_lessons:
-        lesson_id = module_lessons
-
-    # Select YouTube video id
-    video_id = VIDEO_MAP.get((course_id, module_id, lesson_id)) \
-               or VIDEO_MAP.get((course_id, module_id, 1)) \
-               or next(iter(VIDEO_MAP.values()), None)
-
     if enrollment:
-        # increment overall progress by 10 (cap at 100) only if below 100
+        # Increment overall enrollment.progress by 10 (cap at 100) only if below 100
         if (enrollment.progress or 0.0) < 100.0:
             enrollment.progress = min((enrollment.progress or 0.0) + 10.0, 100.0)
             db.session.add(enrollment)
             db.session.commit()
+
         progress = enrollment.progress
 
-        # Ensure a UserProgress exists for this module/lesson
-        user_progress = UserProgress.query.filter_by(
+        # Normalize any existing UserProgress rows that have NULL module_id or lesson_id
+        null_rows = UserProgress.query.filter(
+            UserProgress.user_id == current_user.id,
+            UserProgress.course_id == course_id,
+            (UserProgress.module_id == None) | (UserProgress.lesson_id == None)
+        ).all()
+        for r in null_rows:
+            if not r.module_id:
+                r.module_id = safe_module_id
+            if not r.lesson_id:
+                r.lesson_id = 1
+            r.last_accessed = datetime.utcnow()
+            db.session.add(r)
+        if null_rows:
+            db.session.commit()
+
+        # Use canonical visit record: module_id=safe_module_id, lesson_id=1
+        visit_progress = UserProgress.query.filter_by(
             user_id=current_user.id,
             course_id=course_id,
-            module_id=module_id,
-            lesson_id=lesson_id
+            module_id=safe_module_id,
+            lesson_id=1
         ).first()
-        if not user_progress:
-            user_progress = UserProgress(
+
+        if not visit_progress:
+            # First visit — create baseline with lesson_id=1
+            visit_progress = UserProgress(
                 user_id=current_user.id,
                 course_id=course_id,
-                module_id=module_id,
-                lesson_id=lesson_id,
+                module_id=safe_module_id,
+                lesson_id=1,
                 completed=False,
                 completed_at=None,
                 last_accessed=datetime.utcnow(),
                 time_spent=0,
                 score=0.0
             )
-            db.session.add(user_progress)
+            db.session.add(visit_progress)
             db.session.commit()
         else:
-            user_progress.last_accessed = datetime.utcnow()
-            db.session.add(user_progress)
-            db.session.commit()
+            # Subsequent visits: increment lesson_id by 1 only when allowed
+            if (enrollment.progress or 0.0) < 100.0 and not visit_progress.completed:
+                try:
+                    visit_progress.lesson_id = int(visit_progress.lesson_id or 0) + 1
+                except Exception:
+                    visit_progress.lesson_id = (visit_progress.lesson_id or 0) + 1
+                visit_progress.last_accessed = datetime.utcnow()
+                db.session.add(visit_progress)
+                db.session.commit()
+            if (enrollment.progress or 0.0) >= 100.0:
+                visit_progress.completed = True
+                if not visit_progress.completed_at:
+                    visit_progress.completed_at = datetime.utcnow()
+                db.session.add(visit_progress)
+                db.session.commit()
+
     else:
         progress = 0.0
 
-    return render_template(
-        "progress_course.html",
-        course=course,
-        progress=progress,
-        video_id=video_id,
-        modules=modules,
-        selected_module=module_id,
-        selected_lesson=lesson_id,
-        module_lessons=module_lessons
-    )
+    return render_template("progress_course.html", course=course, progress=progress)
 #--------------------------------------------------------------------
 # Admin Route to Add Comprehensive Sample Courses
 @app.route("/admin/seed-courses")
