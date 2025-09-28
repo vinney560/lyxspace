@@ -276,16 +276,45 @@ def logout():
     user_id = current_user.id
     logout_user()
     user = User.query.get(user_id)
+    # Clear server-side session fully
+    try:
+        session_keys = list(session.keys())
+        for k in session_keys:
+            session.pop(k, None)
+    except Exception:
+        pass
+
     if user and user_id != 1:  # Don't delete admin
-        # Delete all related records
-        Enrollment.query.filter_by(user_id=user_id).delete()
-        UserProgress.query.filter_by(user_id=user_id).delete()
-        EnrollmentAllowed.query.filter_by(user_id=user_id).delete()
-        File.query.filter_by(uploader_id=user_id).delete()
-        FileStore.query.filter_by(uploader_id=user_id).delete()
-        db.session.delete(user)
-        db.session.commit()
-        flash("Your account and all related data have been deleted and you have been logged out.", "info")
+        try:
+            # Remove any physical files uploaded by the user
+            user_files = File.query.filter_by(uploader_id=user_id).all()
+            for f in user_files:
+                try:
+                    if f.filepath and os.path.exists(f.filepath):
+                        os.remove(f.filepath)
+                except Exception:
+                    pass
+
+            # Delete DB records related to the user
+            Enrollment.query.filter_by(user_id=user_id).delete()
+            UserProgress.query.filter_by(user_id=user_id).delete()
+            EnrollmentAllowed.query.filter_by(user_id=user_id).delete()
+            File.query.filter_by(uploader_id=user_id).delete()
+            FileStore.query.filter_by(uploader_id=user_id).delete()
+
+            # Remove any in-memory cache entries for the user's files
+            to_delete = [fid for fid, meta in list(file_cache.items()) if meta.get('uploader_id') == user_id]
+            for fid in to_delete:
+                file_cache.pop(fid, None)
+
+            # Finally delete the user record
+            db.session.delete(user)
+            db.session.commit()
+            flash("Your account and all related data have been deleted and you have been logged out.", "info")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error wiping user data on logout: {e}")
+            flash("Logged out (some user data may not have been removed).", "warning")
     else:
         flash("Logged out.", "info")
     return redirect(url_for("login"))
