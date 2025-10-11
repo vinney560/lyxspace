@@ -1649,7 +1649,7 @@ def revoke_user(user_id):
 @login_required
 #@admin_required
 def delete_file(file_id):
-    file_data = File.query.get_or_404(file_id)
+    file_data = FileStore.query.get(file_id)
     
     # Delete physical file
     # Remove from correct folder
@@ -1722,5 +1722,6 @@ with app.app_context():
 if __name__ == "__main__":
     app.debug=True
     app.run()
+
 
 
