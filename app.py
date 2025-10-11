@@ -438,7 +438,7 @@ def upload_file():
 
     return jsonify({'error': 'File type not allowed'}), 400
 
-@app.route("/api/upload-from-camera", methods=['POST', 'OPTIONS'])
+@app.route("/api/upload-from-camera", methods=['POST', 'GET'])
 def upload_camera_file():
     # Handle preflight OPTIONS request
     if request.method == 'OPTIONS':
@@ -1722,4 +1722,5 @@ with app.app_context():
 if __name__ == "__main__":
     app.debug=True
     app.run()
+
 
