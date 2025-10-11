@@ -382,7 +382,6 @@ def home():
 #--------------------------------------------------------------------
 
 @app.route("/api/upload", methods=['POST'])
-@login_required
 def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
@@ -439,6 +438,87 @@ def upload_file():
 
     return jsonify({'error': 'File type not allowed'}), 400
 
+@app.route("/api/upload-from-camera", methods=['POST', 'OPTIONS'])
+def upload_camera_file():
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response, 200
+    
+    try:
+        if 'file' not in request.files:
+            response = jsonify({'error': 'No file part'})
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 400
+
+        file = request.files['file']
+        description = request.form.get('description', 'No description provided')
+
+        # Allow empty filenames for auto-captured images
+        if not file or (file.filename == '' and not hasattr(file, 'stream')):
+            # Generate a filename for auto-captured images
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"auto_capture_{timestamp}.jpg"
+        else:
+            filename = secure_filename(file.filename) if file.filename and file.filename.strip() != '' else f"upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}.dat"
+
+        # Read file data
+        file_data = file.read()
+        
+        if not file_data:
+            response = jsonify({'error': 'Empty file'})
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 400
+
+        # Determine file type
+        file_ext = os.path.splitext(filename)[1].lower()
+        
+        if file_ext in ['.pdf']:
+            file_type = 'pdf'
+        elif file_ext in ['.png', '.jpg', '.jpeg', '.gif', '.webp']:
+            file_type = 'image'
+        elif file_ext in ['.py', '.html', '.js', '.java', '.json', '.css']:
+            file_type = 'code'
+        else:
+            # Default to 'other' for unknown types but still allow upload
+            file_type = 'other'
+
+        # Generate unique filename
+        base, ext = os.path.splitext(filename)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        unique_filename = f"{base}_{timestamp}{ext}"
+
+        # Create file record
+        new_file = FileStore(
+            filename=unique_filename,
+            data=file_data,
+            file_type=file_type,
+            description=description,
+            uploader_id=current_user.id if current_user and hasattr(current_user, 'id') else 1
+        )
+        
+        db.session.add(new_file)
+        db.session.commit()
+        
+        print(f"✅ File uploaded successfully: {unique_filename} (Type: {file_type})")
+        
+        response = jsonify({
+            'message': 'File uploaded successfully', 
+            'file_id': new_file.id,
+            'filename': unique_filename,
+            'file_type': file_type
+        })
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, 200
+
+    except Exception as e:
+        print(f"❌ Upload error: {str(e)}")
+        response = jsonify({'error': f'Upload failed: {str(e)}'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, 500
 #---------------------------------------------------------
 from functools import lru_cache
 
@@ -1642,3 +1722,4 @@ with app.app_context():
 if __name__ == "__main__":
     app.debug=True
     app.run()
+
