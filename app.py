@@ -1649,21 +1649,22 @@ def revoke_user(user_id):
 @login_required
 #@admin_required
 def delete_file(file_id):
-    file_data = FileStore.query.get(file_id)
+    try:
+        # Get the file record from FileStore (not File)
+        file_data = FileStore.query.get(file_id)
+        
+        # Since you're storing files as binary data in the database,
+        # we only need to delete the database record
+        
+        db.session.delete(file_data)
+        db.session.commit()
+        flash("File deleted successfully.", "success")
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting file: {str(e)}", "error")
+        print(f"Delete error: {str(e)}")
     
-    # Delete physical file
-    # Remove from correct folder
-    if file_data.file_type == 'pdf':
-        folder = app.config['PDF_FOLDER']
-    else:
-        folder = app.config['UPLOAD_FOLDER']
-    file_path = os.path.join(folder, file_data.filepath)
-    if os.path.exists(file_path):
-        os.remove(file_path)
-    
-    db.session.delete(file_data)
-    db.session.commit()
-    flash("File deleted successfully.", "success")
     return redirect(url_for('admin_panel'))
 #--------------------------------------------------------------------
 # Admin Route to Drop All Tables and Reset DB
@@ -1722,6 +1723,7 @@ with app.app_context():
 if __name__ == "__main__":
     app.debug=True
     app.run()
+
 
 
 
