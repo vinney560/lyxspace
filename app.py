@@ -11,15 +11,17 @@ from datetime import datetime, timedelta
 from functools import wraps
 from werkzeug.utils import secure_filename
 import secrets
+from dotenv import load_dotenv
 #import psycopg2
 
 app = Flask(__name__)
+load_dotenv()
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 app.config["SECRET_KEY"] = "aokjijrgiljiwght12345678jhgfth_dfmdvdvlgkflgmlzla"
 
 def database():
-    db_link = "postgresql://lyxin:JsVsgW7AGF6SWqoCdwXseMCg9CKhEQzD@dpg-d3am2ii4d50c73deb4kg-a.oregon-postgres.render.com/lyxspace"
+    db_link = os.getenv('DATABASE', '')
     if db_link:
         try:
             engine = create_engine(db_link)
