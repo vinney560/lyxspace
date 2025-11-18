@@ -12,7 +12,7 @@ from functools import wraps
 from werkzeug.utils import secure_filename
 import secrets
 from dotenv import load_dotenv
-#import psycopg2
+import psycopg2
 
 app = Flask(__name__)
 load_dotenv()
@@ -20,24 +20,83 @@ login_manager = LoginManager(app)
 login_manager.login_view = "login"
 app.config["SECRET_KEY"] = "aokjijrgiljiwght12345678jhgfth_dfmdvdvlgkflgmlzla"
 
+import os
+import socket
+import time
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import OperationalError
+
 def database():
     db_link = os.getenv('DATABASE', '')
-    if db_link:
+    
+    if not db_link:
+        return fallback_to_sqlite()
+    
+    # Test DNS and connection with retries
+    max_retries = 3
+    for attempt in range(max_retries):
         try:
-            engine = create_engine(db_link)
-            engine.connect().close()
+            print(f"Connection attempt {attempt + 1}/{max_retries}")
+            
+            # Extract and test DNS
+            hostname = extract_hostname(db_link)
+            if hostname:
+                test_dns_resolution(hostname)
+            
+            # Test database connection
+            engine = create_engine(
+                db_link,
+                connect_args={"connect_timeout": 10},
+                pool_pre_ping=True
+            )
+            
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            
             print("=" * 40)
-            print("🎉 Connected to Online Database.")
+            print("🎉 Successfully connected to Online Database!")
             print("=" * 40)
             return db_link
+            
         except OperationalError as e:
-            print("x" * 40)
-            print("Failed to Connect to Database.", e)
-            print("x" * 40)
-    db_link2 = "sqlite:///default1.db"
-    print("Using default SQLite database.")
-    return db_link2
+            print(f"❌ Attempt {attempt + 1} failed: {e}")
+            if attempt < max_retries - 1:
+                print("🔄 Retrying in 5 seconds...")
+                time.sleep(5)
+            else:
+                print("💥 All connection attempts failed")
+    
+    return fallback_to_sqlite()
 
+def extract_hostname(db_url):
+    """Extract hostname from database URL"""
+    try:
+        if "@" in db_url:
+            # postgresql://user:pass@hostname:port/db
+            return db_url.split('@')[1].split(':')[0]
+        else:
+            # postgresql://hostname:port/db
+            return db_url.split('//')[1].split('/')[0].split(':')[0]
+    except:
+        return None
+
+def test_dns_resolution(hostname):
+    """Test DNS resolution for hostname"""
+    try:
+        ip_address = socket.gethostbyname(hostname)
+        print(f"✅ DNS resolved: {hostname} → {ip_address}")
+        return True
+    except socket.gaierror as e:
+        print(f"❌ DNS resolution failed for {hostname}: {e}")
+        raise
+
+def fallback_to_sqlite():
+    """Fallback to SQLite database"""
+    db_link = "sqlite:///default1.db"
+    print("Using default SQLite database.")
+    return db_link
+
+# Usage
 app.config["SQLALCHEMY_DATABASE_URI"] = database()
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_size": 5,           # keep 5 connections open
@@ -1785,6 +1844,7 @@ with app.app_context():
 if __name__ == "__main__":
     app.debug=True
     app.run()
+
 
 
 
