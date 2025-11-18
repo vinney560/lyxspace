@@ -27,7 +27,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 
 def database():
-    db_link = os.getenv('DATABASE', '')
+    db_link = os.getenv('DATABASE')
     
     if not db_link:
         return fallback_to_sqlite()
@@ -1844,6 +1844,7 @@ with app.app_context():
 if __name__ == "__main__":
     app.debug=True
     app.run()
+
 
 
 
