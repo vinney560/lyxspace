@@ -27,7 +27,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 
 def database():
-    db_link = os.getenv('DATABASE')
+    db_link = os.getenv('DATABASE') or os.getenv('DATABASE_URL')
     
     if not db_link:
         return fallback_to_sqlite()
@@ -313,7 +313,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 #  Database Keep-Alive 'n Status Logging --> Prevent Aiven's Deactivation
 # =======================================================================
 
-DB_URL = os.getenv("DATABASE_URL")
+DB_URL = os.getenv("DATABASE_URL") or os.getenv('DATABASE')
 
 # Create engine with connection pooling and keep-alive settings
 engine = create_engine(
@@ -1844,6 +1844,7 @@ with app.app_context():
 if __name__ == "__main__":
     app.debug=True
     app.run()
+
 
 
 
