@@ -241,6 +241,66 @@ def protect_file(f):
                 abort(403)
             return f(*args, **kwargs)
         return decorated_function
+
+#--------------------------------------------------------------------
+import os
+import atexit
+from datetime import datetime
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import OperationalError
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+# =======================================================================
+#  Database Keep-Alive 'n Status Logging --> Prevent Aiven's Deactivation
+# =======================================================================
+
+DB_URL = os.getenv("DATABASE_URL")
+
+# Create engine with connection pooling and keep-alive settings
+engine = create_engine(
+    DB_URL,
+    pool_pre_ping=True,
+    pool_recycle=1800,  # Recycle connections every 30 minutes
+    pool_size=5,
+    max_overflow=10,
+    connect_args={"connect_timeout": 5}
+)
+
+# Logging setup
+LOG_FILE = "logs/db_health.log"
+os.makedirs("logs", exist_ok=True)
+
+def log_status(message: str):
+    """Append timestamped messages to a local log file"""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    line = f"[{timestamp}] {message}\n"
+    print(line.strip()) 
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(line)
+
+def keep_database_alive():
+    """Ping database to keep connection alive and log status"""
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        log_status("🟢 DB keep-alive OK")
+    except OperationalError as e:
+        log_status(f"⚠️ DB unreachable: {e}")
+    except Exception as e:
+        log_status(f"❌ Unexpected error pinging DB: {e}")
+
+# Scheduler setup --> Background Ping/Keep Alive
+scheduler = BackgroundScheduler()
+scheduler.add_job(
+    func=keep_database_alive,
+    trigger=IntervalTrigger(minutes=3),
+    id="db_keep_alive",
+    replace_existing=True
+)
+
+scheduler.start()
+log_status("Keep-alive scheduler started — pinging DB every 3 minutes")
+atexit.register(lambda: scheduler.shutdown(wait=False))
 #--------------------------------------------------------------------
 def allowed_file(filename):
     return '.' in filename and \
@@ -1725,6 +1785,7 @@ with app.app_context():
 if __name__ == "__main__":
     app.debug=True
     app.run()
+
 
 
 
